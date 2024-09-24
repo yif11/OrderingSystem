@@ -208,7 +208,7 @@ const OrderInput: React.FC = () => {
             </div>
 
             <div className="mt-4">
-                <label className="block text-lg font-medium mb-2">Received Amount (預かり金額)</label>
+                <label className="block text-lg font-medium mb-2">Received Amount</label>
                 <input
                     type="number"
                     value={receivedAmount}
@@ -219,7 +219,7 @@ const OrderInput: React.FC = () => {
             </div>
 
             <div className="mt-4 text-lg">
-                Change (お釣り): ¥{change >= 0 ? change : 0}
+                Change: ¥{change >= 0 ? change : 0}
             </div>
 
             <button
