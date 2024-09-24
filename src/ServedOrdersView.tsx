@@ -34,7 +34,6 @@ const ServedOrdersView: React.FC = () => {
                     {order.items.map((item) => (
                         <div key={uuidv4()} className="flex justify-between items-center">
                             <span>{item.item} - {item.quantity}</span>
-                            {/* <span className="ml-4 px-2 py-1 rounded bg-blue-500 text-white">Served</span> */}
                         </div>
                     ))}
                 </div>

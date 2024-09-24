@@ -30,7 +30,7 @@ const OrderInput: React.FC = () => {
             await addOrder(orderItems);  // 複数のアイテムをまとめて一度の注文として送信
         }
 
-        // alert('Order has been placed!');
+        alert('Order has been placed!');
         setOrders({
             hotCoffee: 0,
             icedCoffee: 0,
