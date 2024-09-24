@@ -20,11 +20,10 @@ const OrderInput: React.FC = () => {
         croissant: 0,
     });
     const [totalPrice, setTotalPrice] = useState(0);
-    const [receivedAmount, setReceivedAmount] = useState(0); // 預かり金額
-    const [change, setChange] = useState(0); // お釣り
+    const [receivedAmount, setReceivedAmount] = useState<string>(""); // 初期値を空文字に変更
+    const [change, setChange] = useState(0);
     const [loading, setLoading] = useState(false);
 
-    // 商品の数が変更されるたびに合計金額を計算
     useEffect(() => {
         const newTotal = Object.entries(orders).reduce(
             (total, [item, quantity]) => total + productPrices[item as keyof typeof orders] * quantity,
@@ -33,15 +32,15 @@ const OrderInput: React.FC = () => {
         setTotalPrice(newTotal);
     }, [orders]);
 
-    // 預かり金額が変更されるたびにお釣りを計算
     useEffect(() => {
-        setChange(receivedAmount - totalPrice);
+        const received = Number(receivedAmount) || 0; // 空のフィールドを考慮して数値に変換
+        setChange(received - totalPrice);
     }, [receivedAmount, totalPrice]);
 
     const updateOrder = (item: keyof typeof orders, quantity: number) => {
         setOrders((prevOrders) => ({
             ...prevOrders,
-            [item]: Math.max(0, quantity), // 数量は0以上にする
+            [item]: Math.max(0, quantity),
         }));
     };
 
@@ -54,13 +53,13 @@ const OrderInput: React.FC = () => {
 
         const orderData = {
             items: orderItems,
-            totalPrice,         // 合計金額
-            receivedAmount,     // 預かった金額
-            change,             // お釣り
+            totalPrice,
+            receivedAmount: Number(receivedAmount), // 送信時には数値に変換
+            change,
         };
 
         if (orderItems.length > 0) {
-            await addOrder(orderData);  // orderDataをサーバーに送信
+            await addOrder(orderData);
         }
 
         alert('Order has been placed!');
@@ -72,10 +71,9 @@ const OrderInput: React.FC = () => {
             pancake: 0,
             croissant: 0,
         });
-        setReceivedAmount(0);
+        setReceivedAmount(""); // フィールドを空にリセット
         setLoading(false);
     };
-
 
     return (
         <div className="p-4 bg-white shadow-md rounded">
@@ -209,19 +207,17 @@ const OrderInput: React.FC = () => {
                 Total Price: ¥{totalPrice}
             </div>
 
-            {/* 預かり金額の入力フィールド */}
             <div className="mt-4">
                 <label className="block text-lg font-medium mb-2">Received Amount (預かり金額)</label>
                 <input
                     type="number"
                     value={receivedAmount}
-                    onChange={(e) => setReceivedAmount(Number(e.target.value))}
+                    onChange={(e) => setReceivedAmount(e.target.value)} // 文字列として保存
                     className="w-full p-2 border rounded"
                     placeholder="Enter received amount"
                 />
             </div>
 
-            {/* お釣りの表示 */}
             <div className="mt-4 text-lg">
                 Change (お釣り): ¥{change >= 0 ? change : 0}
             </div>
