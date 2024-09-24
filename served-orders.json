@@ -1,1 +1,1 @@
-[]
+[{"id":1,"items":[{"item":"hotCoffee","quantity":2,"served":true}]},{"id":2,"items":[{"item":"croissant","quantity":1,"served":true}]},{"id":3,"items":[{"item":"pancake","quantity":1,"served":true}]},{"id":5,"items":[{"item":"icedTea","quantity":1,"served":true}]},{"id":4,"items":[{"item":"hotTea","quantity":1,"served":true}]}]
