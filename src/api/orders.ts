@@ -12,13 +12,13 @@ export const fetchServedOrders = async () => {
     return await response.json();
 };
 
-export const addOrder = async (items: { item: string; quantity: number }[]) => {
+export const addOrder = async (orderData: { items: { item: string; quantity: number }[], totalPrice: number, receivedAmount: number, change: number }) => {
     const response = await fetch(`${apiUrl}/add-order`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify(orderData),
     });
     if (!response.ok) throw new Error('Failed to add order');
 };

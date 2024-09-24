@@ -52,8 +52,15 @@ const OrderInput: React.FC = () => {
             .filter(([_, quantity]) => quantity > 0)
             .map(([item, quantity]) => ({ item, quantity }));
 
+        const orderData = {
+            items: orderItems,
+            totalPrice,         // 合計金額
+            receivedAmount,     // 預かった金額
+            change,             // お釣り
+        };
+
         if (orderItems.length > 0) {
-            await addOrder(orderItems);  // 複数のアイテムをまとめて一度の注文として送信
+            await addOrder(orderData);  // orderDataをサーバーに送信
         }
 
         alert('Order has been placed!');
@@ -65,9 +72,10 @@ const OrderInput: React.FC = () => {
             pancake: 0,
             croissant: 0,
         });
-        setReceivedAmount(0); // 預かり金額をリセット
+        setReceivedAmount(0);
         setLoading(false);
     };
+
 
     return (
         <div className="p-4 bg-white shadow-md rounded">

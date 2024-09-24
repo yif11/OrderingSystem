@@ -44,10 +44,16 @@ app.get('/served-orders', (req, res) => {
 
 // 注文の追加
 app.post('/add-order', (req, res) => {
-    const { items } = req.body;
+    const { items, totalPrice, receivedAmount, change } = req.body;
     const orders = readOrders();
     let maxOrderId = readMaxOrderId(); // 最大の注文IDを取得
-    const newOrder = { id: maxOrderId + 1, items }; // 新しい注文に一意のIDを付与
+    const newOrder = {
+        id: maxOrderId + 1,
+        items,
+        totalPrice,
+        receivedAmount,
+        change
+    };
     orders.push(newOrder);
     writeOrders(orders);
     writeMaxOrderId(maxOrderId + 1); // 最大IDを更新
