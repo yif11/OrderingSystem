@@ -1,1 +1,100 @@
-[{"id":3,"items":[{"item":"hotCoffee","quantity":1,"served":true}],"totalPrice":100,"receivedAmount":1000,"change":900},{"id":1,"items":[{"item":"hotCoffee","quantity":2,"served":true},{"item":"icedCoffee","quantity":1,"served":true}],"totalPrice":300,"receivedAmount":500,"change":200},{"id":2,"items":[{"item":"hotTea","quantity":1,"served":true},{"item":"icedTea","quantity":1,"served":true}],"totalPrice":200,"receivedAmount":200,"change":0},{"id":4,"items":[{"item":"icedCoffee","quantity":1,"served":true}],"totalPrice":100,"receivedAmount":100,"change":0},{"id":5,"items":[{"item":"hotCoffee","quantity":2,"served":true}],"totalPrice":200,"receivedAmount":500,"change":300},{"id":6,"items":[{"item":"hotCoffee","quantity":1,"served":true},{"item":"hotTea","quantity":1,"served":true},{"item":"pancake","quantity":1,"served":true}],"totalPrice":300,"receivedAmount":1000,"change":700}]
+[
+    {
+        "id": 3,
+        "items": [
+            {
+                "item": "hotCoffee",
+                "quantity": 1,
+                "served": true
+            }
+        ],
+        "totalPrice": 100,
+        "receivedAmount": 1000,
+        "change": 900
+    },
+    {
+        "id": 1,
+        "items": [
+            {
+                "item": "hotCoffee",
+                "quantity": 2,
+                "served": true
+            },
+            {
+                "item": "icedCoffee",
+                "quantity": 1,
+                "served": true
+            }
+        ],
+        "totalPrice": 300,
+        "receivedAmount": 500,
+        "change": 200
+    },
+    {
+        "id": 2,
+        "items": [
+            {
+                "item": "hotTea",
+                "quantity": 1,
+                "served": true
+            },
+            {
+                "item": "icedTea",
+                "quantity": 1,
+                "served": true
+            }
+        ],
+        "totalPrice": 200,
+        "receivedAmount": 200,
+        "change": 0
+    },
+    {
+        "id": 4,
+        "items": [
+            {
+                "item": "icedCoffee",
+                "quantity": 1,
+                "served": true
+            }
+        ],
+        "totalPrice": 100,
+        "receivedAmount": 100,
+        "change": 0
+    },
+    {
+        "id": 5,
+        "items": [
+            {
+                "item": "hotCoffee",
+                "quantity": 2,
+                "served": true
+            }
+        ],
+        "totalPrice": 200,
+        "receivedAmount": 500,
+        "change": 300
+    },
+    {
+        "id": 6,
+        "items": [
+            {
+                "item": "hotCoffee",
+                "quantity": 1,
+                "served": true
+            },
+            {
+                "item": "hotTea",
+                "quantity": 1,
+                "served": true
+            },
+            {
+                "item": "pancake",
+                "quantity": 1,
+                "served": true
+            }
+        ],
+        "totalPrice": 300,
+        "receivedAmount": 1000,
+        "change": 700
+    }
+]
