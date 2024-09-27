@@ -2,13 +2,11 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const receiptline = require('receiptline'); // 追加
 
 const app = express();
 app.use(express.json());
-// app.use(cors());
-app.use(cors({
-    origin: '*'
-}));
+app.use(cors());
 
 const ordersFilePath = path.join(__dirname, 'orders.json');
 const servedOrdersFilePath = path.join(__dirname, 'served-orders.json');
@@ -45,22 +43,117 @@ app.get('/served-orders', (req, res) => {
     res.json(servedOrders);
 });
 
-// 注文の追加
+const generateReceipt = (order) => {
+    let receiptText = `
+{width: *,7}
+{align: center}
+|  ^^^^  Jazz喫茶 | |
+
+
+{width: 3,*,3}
+| |豊橋技術科学大学 Jazz研究会 | |
+| |2023/10/04（水）19:61 | |
+| |Order #${order.id} | |
+
+{width: 3,*,*,5}
+    `;
+
+    order.items.forEach(item => {
+        const price = item.price * item.quantity;
+        receiptText += `| |${item.item} x${item.quantity} | ￥${price}| |`;
+    });
+
+    receiptText += `
+
+{width: 3,*,*,*,3}
+| |^"合計|7点 | ￥${order.totalPrice} ||
+| |お預かり|| ￥${order.receivedAmount} ||
+| |^"お釣り|| ^￥${order.change} ||
+
+{width:,2,*,2; border:none}
+| ||☆ご来店ありがとうございました。☆| |
+
+{code:https://www.instagram.com/tut_jazzken?igsh=OW9vZjVpY24zZmwz; option:qrcode,5,H}
+
+-
+
+{width: 3,*,3}
+| |^^^^"#${order.id}| |
+    `;
+
+    return receiptText;
+};
+
+const generateOrderId = (order) => {
+    let orderId = `
+{width: 3,*,3}
+| |^^^^"#${order.id}| |
+    `;
+
+    return orderId;
+};
+
+// 注文の追加とレシートの生成 (SVG)
 app.post('/add-order', (req, res) => {
     const { items, totalPrice, receivedAmount, change } = req.body;
     const orders = readOrders();
     let maxOrderId = readMaxOrderId(); // 最大の注文IDを取得
+    // const newOrder = {
+    //     id: maxOrderId + 1,
+    //     items,
+    //     totalPrice,
+    //     receivedAmount,
+    //     change
+    // };
+    // orders.push(newOrder);
+    // writeOrders(orders);
+    // writeMaxOrderId(maxOrderId + 1); // 最大IDを更新
     const newOrder = {
         id: maxOrderId + 1,
-        items,
+        items: items.map(item => ({
+            item: item.item,
+            quantity: item.quantity,
+            price: item.price // 単価を追加
+        })),
         totalPrice,
         receivedAmount,
         change
     };
+
     orders.push(newOrder);
     writeOrders(orders);
     writeMaxOrderId(maxOrderId + 1); // 最大IDを更新
-    res.status(201).send('Order added');
+
+    const order = {
+        id: 21,
+        items: [
+            { item: 'croissant', quantity: 2, price: 100 }
+        ],
+        totalPrice: 100,
+        receivedAmount: 111,
+        change: 11
+    };
+
+    // レシートデータ生成
+    const receiptDoc = generateReceipt(order);
+
+    // SVG出力用設定
+    const displaySettings = {
+        cpl: 42,
+        encoding: 'cp932'
+    };
+
+    // レシートをSVGに変換
+    const svg = receiptline.transform(receiptDoc, displaySettings);
+
+    // SVGファイルとして保存
+    const svgFilePath = path.join(__dirname, `receipt-${newOrder.id}.svg`);
+
+    // SVGファイルに書き込み
+    fs.writeFileSync('receipt.svg', svg, 'utf8');
+    // fs.writeFileSync(svgFilePath, svg, 'utf8');
+
+    res.status(201).json({ message: 'Order added and receipt generated', svgFile: svgFilePath });
 });
 
 // 注文アイテムを提供済みにマーク

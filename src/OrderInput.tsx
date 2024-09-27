@@ -44,12 +44,47 @@ const OrderInput: React.FC = () => {
         }));
     };
 
+    // const handleSubmit = async () => {
+    //     setLoading(true);
+
+    //     const orderItems = Object.entries(orders)
+    //         .filter(([_, quantity]) => quantity > 0)
+    //         .map(([item, quantity]) => ({ item, quantity }));
+
+    //     const orderData = {
+    //         items: orderItems,
+    //         totalPrice,
+    //         receivedAmount: Number(receivedAmount), // 送信時には数値に変換
+    //         change,
+    //     };
+
+    //     if (orderItems.length > 0) {
+    //         await addOrder(orderData);
+    //     }
+
+    //     alert('Order has been placed!');
+    //     setOrders({
+    //         hotCoffee: 0,
+    //         icedCoffee: 0,
+    //         hotTea: 0,
+    //         icedTea: 0,
+    //         pancake: 0,
+    //         croissant: 0,
+    //     });
+    //     setReceivedAmount(""); // フィールドを空にリセット
+    //     setLoading(false);
+    // };
     const handleSubmit = async () => {
         setLoading(true);
 
+        // 単価を含めた商品情報を作成
         const orderItems = Object.entries(orders)
             .filter(([_, quantity]) => quantity > 0)
-            .map(([item, quantity]) => ({ item, quantity }));
+            .map(([item, quantity]) => ({
+                item,
+                quantity,
+                price: productPrices[item as keyof typeof orders] // 単価を追加
+            }));
 
         const orderData = {
             items: orderItems,
@@ -74,6 +109,7 @@ const OrderInput: React.FC = () => {
         setReceivedAmount(""); // フィールドを空にリセット
         setLoading(false);
     };
+
 
     return (
         <div className="p-4 bg-white shadow-md rounded">
