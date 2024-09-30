@@ -97,7 +97,7 @@ const OrderInput: React.FC = () => {
             await addOrder(orderData);
         }
 
-        alert('Order has been placed!');
+        // alert('Order has been placed!');
         setOrders({
             hotCoffee: 0,
             icedCoffee: 0,

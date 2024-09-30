@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const receiptline = require('receiptline');
+const { exec } = require('child_process');
 
 const app = express();
 app.use(express.json());
@@ -140,11 +141,70 @@ app.post('/add-order', (req, res) => {
     const svg = receiptline.transform(receiptDoc, displaySettings);
 
     // SVGファイルとして保存
-    const svgFilePath = path.join(__dirname, `receipt-${newOrder.id}.svg`);
+    const svgFilePath = path.join(__dirname, `receipts/receipt-${newOrder.id}.svg`);
 
     // SVGファイルに書き込み
     // fs.writeFileSync('receipt.svg', svg, 'utf8');
     fs.writeFileSync(svgFilePath, svg, 'utf8');
+
+    // プレビュー用HTMLの作成
+    const htmlFilePath = path.join(__dirname, 'preview.html');
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Print Preview</title>
+        </head>
+        <body>
+            <div id="content">
+                <img src="file:///${svgFilePath.replace(/\\/g, '/')}" alt="Receipt" style="width: 100%; height: auto;" />
+            </div>
+
+            <script>
+                window.onload = function() {
+                    window.print();  // ページがロードされたら印刷プレビューを開く
+                    setTimeout(function() {
+                        window.close();
+                    }, 500);
+                };
+            </script>
+        </body>
+        </html>
+    `;
+
+    // HTMLファイルを作成
+    fs.writeFileSync(htmlFilePath, htmlContent, 'utf8');
+
+    const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+    // const svgFileUrl = `file://${svgFilePath}`;
+    const svgFileUrl = `file:///${svgFilePath.replace(/\\/g, '/')}`;
+
+    // Chromeをkiosk-printingモードで起動して印刷
+    // exec(`"${chromePath}" --kiosk-printing --kiosk file://C:/Users/yifdt/jazz/receipt-49.svg`, (error, stdout, stderr) => {
+    // exec(`"${chromePath}" --kiosk --kiosk-printing --no-default-browser-check --disable-extensions --disable-popup-blocking --use-system-default-printer file://C:/Users/yifdt/jazz/receipt-49.svg`, (error, stdout, stderr) => {
+    exec(`"${chromePath}" --kiosk-printing --no-default-browser-check --disable-extensions "file:///${htmlFilePath.replace(/\\/g, '/')}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error opening Chrome: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+
+        // setTimeout(() => {
+        //     exec('taskkill /IM chrome.exe /F', (killError, killStdout, killStderr) => {
+        //         if (killError) {
+        //             console.error(`Error closing Chrome: ${killError.message}`);
+        //             return;
+        //         }
+        //         console.log('Chrome closed');
+        //     });
+        // }, 5000);
+    });
 
     res.status(201).json({ message: 'Order added and receipt generated', svgFile: svgFilePath });
 });

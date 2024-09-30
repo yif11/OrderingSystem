@@ -1,0 +1,24 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Print Preview</title>
+        </head>
+        <body>
+            <div id="content">
+                <img src="file:///C:/Users/yifdt/jazz/receipts/receipt-2.svg" alt="Receipt" style="width: 100%; height: auto;" />
+            </div>
+
+            <script>
+                window.onload = function() {
+                    window.print();  // ページがロードされたら印刷プレビューを開く
+                    setTimeout(function() {
+                        window.close();
+                    }, 500);
+                };
+            </script>
+        </body>
+        </html>
+    
