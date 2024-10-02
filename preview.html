@@ -8,14 +8,23 @@
         </head>
         <body>
             <div id="content">
-                <img src="file:///C:/Users/yifdt/jazz/receipts/receipt-2.svg" alt="Receipt" style="width: 100%; height: auto;" />
+                <img id="images" src="file:///C:/Users/yifdt/jazz/receipts/receipt-2.svg" alt="Receipt" style="width: 100%; height: auto;" />
             </div>
 
             <script>
                 window.onload = function() {
-                    window.print();  // ページがロードされたら印刷プレビューを開く
+                    window.print();
+                };
+
+                window.onafterprint = function() {
+                    var imageElement = document.getElementById('images');
+                    imageElement.src = "file:///C:/Users/yifdt/jazz/receipts/order_ids/order-id-2.svg";
+
                     setTimeout(function() {
-                        window.close();
+                        window.print();
+                        setTimeout(function() {
+                            window.close();
+                        }, 100);
                     }, 500);
                 };
             </script>
