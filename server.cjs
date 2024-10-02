@@ -44,7 +44,7 @@ app.get('/served-orders', (req, res) => {
     res.json(servedOrders);
 });
 
-const generateReceipt = (order) => {
+const generateReceipt = (order, maxOrderId) => {
     // 現在の日付と時刻を取得
     const now = new Date();
     const year = now.getFullYear(); // 年
@@ -54,6 +54,7 @@ const generateReceipt = (order) => {
     const minutes = ('0' + now.getMinutes()).slice(-2); // 分
     const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
     const dayOfWeek = daysOfWeek[now.getDay()]; // 曜日
+    const printOrderId = order.isTakeout ? `T${maxOrderId + 1}` : `${maxOrderId + 1}`;
 
     let quantity = 0;
     let receiptText = `
@@ -65,7 +66,7 @@ const generateReceipt = (order) => {
 {width: 3,*,3}
 | |豊橋技術科学大学 Jazz研究会 | |
 | |${year}/${month}/${day}（${dayOfWeek}）${hours}:${minutes} | |
-| |Order #${order.id} | |
+| |Order #${printOrderId} | |
 
 {width: 3,*,*,5}
     `;
@@ -92,10 +93,12 @@ const generateReceipt = (order) => {
     return receiptText;
 };
 
-const generateOrderId = (order) => {
+const generateOrderId = (order, maxOrderId) => {
+    const printOrderId = order.isTakeout ? `T${maxOrderId + 1}` : `${maxOrderId + 1}`;
+
     let orderId = `
 {width: 3,*,3}
-| |^^^^^^^"#${order.id}| |
+| |^^^^^^^"#${printOrderId}| |
     `;
 
     return orderId;
@@ -103,7 +106,8 @@ const generateOrderId = (order) => {
 
 // 注文の追加とレシートの生成 (SVG)
 app.post('/add-order', (req, res) => {
-    const { items, totalPrice, receivedAmount, change } = req.body;
+    // const { items, totalPrice, receivedAmount, change } = req.body;
+    const { items, totalPrice, receivedAmount, change, isTakeout } = req.body;
     const orders = readOrders();
     let maxOrderId = readMaxOrderId(); // 最大の注文IDを取得
 
@@ -116,7 +120,8 @@ app.post('/add-order', (req, res) => {
         })),
         totalPrice,
         receivedAmount,
-        change
+        change,
+        isTakeout
     };
 
     orders.push(newOrder);
@@ -124,8 +129,8 @@ app.post('/add-order', (req, res) => {
     writeMaxOrderId(maxOrderId + 1); // 最大IDを更新
 
     // レシートデータ生成
-    const receiptDoc = generateReceipt(newOrder);
-    const orderIdDoc = generateOrderId(newOrder);
+    const receiptDoc = generateReceipt(newOrder, maxOrderId);
+    const orderIdDoc = generateOrderId(newOrder, maxOrderId);
 
     // SVG出力用設定
     const displaySettings = {

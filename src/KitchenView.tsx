@@ -14,6 +14,7 @@ type OrderItem = {
 type Order = {
     id: number;
     items: OrderItem[];
+    isTakeout: boolean;
 };
 
 const fetcher = async (): Promise<Order[]> => await fetchOrders();
@@ -64,7 +65,7 @@ const KitchenView: React.FC = () => {
             {ordersToDisplay.map((order) => (
                 <div key={order.id} className="mb-4">
                     {/* 注文番号として order.id を使用 */}
-                    <h3 className="text-xl font-semibold">Order #{order.id}</h3>
+                    <h3 className="text-xl font-semibold">Order #{order.isTakeout ? `T${order.id}` : order.id}</h3>
                     {order.items.map((item, itemIndex) => (
                         <div key={uuidv4()} className="flex justify-between items-center">
                             <span>{item.item} - {item.quantity}</span>

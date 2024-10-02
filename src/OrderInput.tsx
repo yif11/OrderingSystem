@@ -23,6 +23,7 @@ const OrderInput: React.FC = () => {
     const [receivedAmount, setReceivedAmount] = useState<string>(""); // 初期値を空文字に変更
     const [change, setChange] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [isTakeout, setIsTakeout] = useState(false);
 
     useEffect(() => {
         const newTotal = Object.entries(orders).reduce(
@@ -44,36 +45,6 @@ const OrderInput: React.FC = () => {
         }));
     };
 
-    // const handleSubmit = async () => {
-    //     setLoading(true);
-
-    //     const orderItems = Object.entries(orders)
-    //         .filter(([_, quantity]) => quantity > 0)
-    //         .map(([item, quantity]) => ({ item, quantity }));
-
-    //     const orderData = {
-    //         items: orderItems,
-    //         totalPrice,
-    //         receivedAmount: Number(receivedAmount), // 送信時には数値に変換
-    //         change,
-    //     };
-
-    //     if (orderItems.length > 0) {
-    //         await addOrder(orderData);
-    //     }
-
-    //     alert('Order has been placed!');
-    //     setOrders({
-    //         hotCoffee: 0,
-    //         icedCoffee: 0,
-    //         hotTea: 0,
-    //         icedTea: 0,
-    //         pancake: 0,
-    //         croissant: 0,
-    //     });
-    //     setReceivedAmount(""); // フィールドを空にリセット
-    //     setLoading(false);
-    // };
     const handleSubmit = async () => {
         setLoading(true);
 
@@ -91,6 +62,7 @@ const OrderInput: React.FC = () => {
             totalPrice,
             receivedAmount: Number(receivedAmount), // 送信時には数値に変換
             change,
+            isTakeout
         };
 
         if (orderItems.length > 0) {
@@ -107,9 +79,9 @@ const OrderInput: React.FC = () => {
             croissant: 0,
         });
         setReceivedAmount(""); // フィールドを空にリセット
+        setIsTakeout(false);
         setLoading(false);
     };
-
 
     return (
         <div className="p-4 bg-white shadow-md rounded">
@@ -236,6 +208,16 @@ const OrderInput: React.FC = () => {
                         </button>
                     </div>
                 </div>
+            </div>
+
+            {/* テイクアウトのチェックボックス */}
+            <div className="mb-4">
+                <label className="text-lg font-semibold mr-2">Takeout</label>
+                <input
+                    type="checkbox"
+                    checked={isTakeout}
+                    onChange={(e) => setIsTakeout(e.target.checked)}
+                />
             </div>
 
             {/* 合計金額の表示 */}
