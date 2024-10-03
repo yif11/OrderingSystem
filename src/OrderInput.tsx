@@ -84,8 +84,8 @@ const OrderInput: React.FC = () => {
     };
 
     return (
-        <div className="p-4 bg-white shadow-md rounded">
-            <h2 className="text-2xl font-bold mb-4">Place an Order</h2>
+        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
+            <h2 className="text-2xl font-bold mb-4 text-center">Place an Order</h2>
 
             {/* コーヒーの注文 */}
             <div className="mb-4">
@@ -221,7 +221,7 @@ const OrderInput: React.FC = () => {
             </div>
 
             {/* 合計金額の表示 */}
-            <div className="mt-6 text-xl font-bold">
+            <div className="mt-6 text-xl font-bold text-center">
                 Total Price: ¥{totalPrice}
             </div>
 
@@ -243,11 +243,12 @@ const OrderInput: React.FC = () => {
             <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="mt-6 bg-blue-500 text-white px-4 py-2 rounded"
+                className="mt-6 bg-blue-500 text-white px-4 py-2 rounded w-full"
             >
                 {loading ? 'Processing...' : 'Place Order'}
             </button>
         </div>
+
     );
 };
 

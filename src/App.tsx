@@ -11,13 +11,13 @@ const App: React.FC = () => {
         <nav>
           <ul>
             <li>
-              <Link to="/">Kitchen View</Link>
+              <Link to="/" className='font-bold'>・Kitchen View</Link>
             </li>
             <li>
-              <Link to="/order">Order Input</Link>
+              <Link to="/order" className='font-bold'>・Order Input</Link>
             </li>
             <li>
-              <Link to="/served">Served Orders View</Link>
+              <Link to="/served" className='font-bold'>・Served Orders View</Link>
             </li>
           </ul>
         </nav>

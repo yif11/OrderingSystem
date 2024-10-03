@@ -60,8 +60,8 @@ const KitchenView: React.FC = () => {
     const ordersToDisplay = localData || data;
 
     return (
-        <div className="p-4 bg-white shadow-md rounded">
-            <h2 className="text-2xl font-bold mb-4">Orders for Kitchen</h2>
+        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
+            <h2 className="text-2xl font-bold mb-4 text-center">Orders for Kitchen</h2>
             {ordersToDisplay.map((order) => (
                 <div key={order.id} className="mb-4">
                     {/* 注文番号として order.id を使用 */}

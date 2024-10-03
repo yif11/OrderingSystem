@@ -27,8 +27,8 @@ const ServedOrdersView: React.FC = () => {
     if (!data || data.length === 0) return <div>No served orders yet.</div>;
 
     return (
-        <div className="p-4 bg-white shadow-md rounded">
-            <h2 className="text-2xl font-bold mb-4">Served Orders</h2>
+        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
+            <h2 className="text-2xl font-bold mb-4 text-center">Served Orders</h2>
             {data.map((order) => (
                 <div key={order.id} className="mb-4">
                     {/* "Served Orders View"でも"Kitchen View"と同じ注文IDを表示 */}
