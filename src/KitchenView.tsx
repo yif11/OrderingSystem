@@ -61,11 +61,11 @@ const KitchenView: React.FC = () => {
 
     return (
         <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
-            <h2 className="text-2xl font-bold mb-4 text-center">Orders for Kitchen</h2>
+            <h2 className="text-3xl font-bold mb-4 text-center">Orders for Kitchen</h2>
             {ordersToDisplay.map((order) => (
                 <div key={order.id} className="mb-4">
                     {/* 注文番号として order.id を使用 */}
-                    <h3 className="text-xl font-semibold">Order #{order.isTakeout ? `T${order.id}` : order.id}</h3>
+                    <h3 className="text-2xl font-semibold">Order #{order.isTakeout ? `T${order.id}` : order.id}</h3>
                     {order.items.map((item, itemIndex) => (
                         <div key={uuidv4()} className="flex justify-between items-center">
                             <span>{item.item} - {item.quantity}</span>
