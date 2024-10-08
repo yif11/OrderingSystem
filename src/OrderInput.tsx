@@ -85,13 +85,13 @@ const OrderInput: React.FC = () => {
 
     return (
         <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
-            <h2 className="text-3xl font-bold mb-4 text-center">Place an Order</h2>
+            <h2 className="text-3xl font-bold mb-4 text-center">注文画面</h2>
 
             {/* コーヒーの注文 */}
             <div className="mb-4">
-                <h3 className="text-lg font-semibold">Coffee</h3>
+                <h3 className="text-lg font-semibold">コーヒー</h3>
                 <div className="flex justify-between items-center">
-                    <span>Hot Coffee (¥{productPrices.hotCoffee})</span>
+                    <span>ホットコーヒー(¥{productPrices.hotCoffee})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('hotCoffee', orders.hotCoffee - 1)}
@@ -109,7 +109,7 @@ const OrderInput: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span>Iced Coffee (¥{productPrices.icedCoffee})</span>
+                    <span>アイスコーヒー (¥{productPrices.icedCoffee})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('icedCoffee', orders.icedCoffee - 1)}
@@ -130,9 +130,9 @@ const OrderInput: React.FC = () => {
 
             {/* 紅茶の注文 */}
             <div className="mb-4">
-                <h3 className="text-lg font-semibold">Tea</h3>
+                <h3 className="text-lg font-semibold">紅茶</h3>
                 <div className="flex justify-between items-center">
-                    <span>Hot Tea (¥{productPrices.hotTea})</span>
+                    <span>ホットティー(¥{productPrices.hotTea})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('hotTea', orders.hotTea - 1)}
@@ -150,7 +150,7 @@ const OrderInput: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span>Iced Tea (¥{productPrices.icedTea})</span>
+                    <span>アイスティー (¥{productPrices.icedTea})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('icedTea', orders.icedTea - 1)}
@@ -171,9 +171,9 @@ const OrderInput: React.FC = () => {
 
             {/* フードメニューの注文 */}
             <div className="mb-4">
-                <h3 className="text-lg font-semibold">Food</h3>
+                <h3 className="text-lg font-semibold">フード</h3>
                 <div className="flex justify-between items-center">
-                    <span>Pancake (¥{productPrices.pancake})</span>
+                    <span>パンケーキ(¥{productPrices.pancake})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('pancake', orders.pancake - 1)}
@@ -191,7 +191,7 @@ const OrderInput: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span>Croissant (¥{productPrices.croissant})</span>
+                    <span>クロッフル(¥{productPrices.croissant})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('croissant', orders.croissant - 1)}
@@ -212,7 +212,7 @@ const OrderInput: React.FC = () => {
 
             {/* テイクアウトのチェックボックス */}
             <div className="mb-4">
-                <label className="text-lg font-semibold mr-2">Takeout</label>
+                <label className="text-lg font-semibold mr-2">テイクアウト</label>
                 <input
                     type="checkbox"
                     checked={isTakeout}
@@ -222,11 +222,11 @@ const OrderInput: React.FC = () => {
 
             {/* 合計金額の表示 */}
             <div className="mt-6 text-xl font-bold text-center">
-                Total Price: ¥{totalPrice}
+                合計金額: ¥{totalPrice}
             </div>
 
             <div className="mt-4">
-                <label className="block text-lg font-medium mb-2">Received Amount</label>
+                <label className="block text-lg font-medium mb-2">預り金</label>
                 <input
                     type="number"
                     value={receivedAmount}
@@ -237,7 +237,7 @@ const OrderInput: React.FC = () => {
             </div>
 
             <div className="mt-4 text-lg">
-                Change: ¥{change >= 0 ? change : 0}
+                お釣り: ¥{change >= 0 ? change : 0}
             </div>
 
             <button
