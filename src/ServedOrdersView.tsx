@@ -30,14 +30,27 @@ const ServedOrdersView: React.FC = () => {
         <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
             <h2 className="text-3xl font-bold mb-4 text-center">Served Orders</h2>
             {data.map((order) => (
-                <div key={order.id} className="mb-4">
-                    {/* "Served Orders View"でも"Kitchen View"と同じ注文IDを表示 */}
-                    <h3 className="text-2xl font-semibold">Order #{order.isTakeout ? `T${order.id}` : order.id}</h3>
-                    {order.items.map((item) => (
-                        <div key={uuidv4()} className="flex justify-between items-center">
-                            <span>{item.item} - {item.quantity}</span>
-                        </div>
-                    ))}
+                <div key={order.id} className="mb-6">
+                    {/* Order ID displayed as a title above the table */}
+                    <h3 className="text-2xl font-semibold mb-2">
+                        Order #{order.isTakeout ? `T${order.id}` : order.id}
+                    </h3>
+                    <table className="table-auto w-full border-collapse border border-gray-200">
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <th className="border border-gray-300 px-4 py-2">Item</th>
+                                <th className="border border-gray-300 px-4 py-2">Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {order.items.map((item, index) => (
+                                <tr key={index} className="hover:bg-gray-50">
+                                    <td className="border border-gray-300 px-4 py-2">{item.item}</td>
+                                    <td className="border border-gray-300 px-4 py-2 text-center">{item.quantity}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             ))}
         </div>
