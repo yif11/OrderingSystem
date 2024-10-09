@@ -1,5 +1,5 @@
-const apiUrl = 'http://localhost:5000';  // サーバーのURL
-// const apiUrl = 'http://192.168.64.83:5000';
+// const apiUrl = 'http://localhost:5000';  // サーバーのURL
+const apiUrl = 'http://192.168.3.4:5000';
 
 export const fetchOrders = async () => {
     const response = await fetch(`${apiUrl}/orders`);

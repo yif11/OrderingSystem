@@ -27,7 +27,7 @@ const ServedOrdersView: React.FC = () => {
     if (!data || data.length === 0) return <div>No served orders yet.</div>;
 
     return (
-        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
+        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg border border-black">
             <h2 className="text-3xl font-bold mb-4 text-center">Served Orders</h2>
             {data.map((order) => (
                 <div key={order.id} className="mb-6">

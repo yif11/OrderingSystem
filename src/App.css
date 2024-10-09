@@ -1,0 +1,26 @@
+/* App.css */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
+    text-align: center;
+    z-index: 1000; /* ヘッダーを前面に表示 */
+  }
+  
+  .nav-list {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .nav-item {
+    margin: 0 15px;
+  }
+  
+  .main {
+    padding: 100px 20px 20px; /* ヘッダーの高さ分だけパディングを追加 */
+  }

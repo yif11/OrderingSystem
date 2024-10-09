@@ -1,1 +1,1 @@
-[]
+[{"id":3,"items":[{"item":"hotCoffee","quantity":1,"price":100},{"item":"icedCoffee","quantity":1,"price":100},{"item":"croissant","quantity":1,"price":100}],"totalPrice":300,"receivedAmount":300,"change":0,"isTakeout":false},{"id":5,"items":[{"item":"pancake","quantity":2,"price":100}],"totalPrice":200,"receivedAmount":200,"change":0,"isTakeout":false}]

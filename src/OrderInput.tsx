@@ -84,7 +84,7 @@ const OrderInput: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
+        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg border border-black">
             <h2 className="text-3xl font-bold mb-4 text-center">注文画面</h2>
 
             {/* コーヒーの注文 */}

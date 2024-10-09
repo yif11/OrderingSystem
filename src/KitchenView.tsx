@@ -60,24 +60,37 @@ const KitchenView: React.FC = () => {
     const ordersToDisplay = localData || data;
 
     return (
-        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
+        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg border border-black">
             <h2 className="text-3xl font-bold mb-4 text-center">Orders for Kitchen</h2>
             {ordersToDisplay.map((order) => (
                 <div key={order.id} className="mb-4">
-                    {/* 注文番号として order.id を使用 */}
-                    <h3 className="text-2xl font-semibold">Order #{order.isTakeout ? `T${order.id}` : order.id}</h3>
-                    {order.items.map((item, itemIndex) => (
-                        <div key={uuidv4()} className="flex justify-between items-center">
-                            <span>{item.item} - {item.quantity}</span>
-                            <button
-                                onClick={() => handleServeItem(order.id, itemIndex)}
-                                className={`ml-4 px-2 py-1 rounded ${item.served ? 'bg-gray-500' : 'bg-green-500'} text-white`}
-                                disabled={item.served}
-                            >
-                                {item.served ? 'Served' : 'Mark as Served'}
-                            </button>
-                        </div>
-                    ))}
+                    <h3 className="text-2xl font-semibold text-center">Order #{order.isTakeout ? `T${order.id}` : order.id}</h3>
+                    <table className="min-w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr>
+                                <th className="border border-gray-300 p-2">Item</th>
+                                <th className="border border-gray-300 p-2">Quantity</th>
+                                <th className="border border-gray-300 p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {order.items.map((item, itemIndex) => (
+                                <tr key={`${order.id}-${itemIndex}`} className="border-b border-gray-200">
+                                    <td className="border border-gray-300 p-2">{item.item}</td>
+                                    <td className="border border-gray-300 p-2">{item.quantity}</td>
+                                    <td className="border border-gray-300 p-2">
+                                        <button
+                                            onClick={() => handleServeItem(order.id, itemIndex)}
+                                            className={`px-2 py-1 rounded ${item.served ? 'bg-gray-500' : 'bg-green-500'} text-white`}
+                                            disabled={item.served}
+                                        >
+                                            {item.served ? 'Served' : 'Mark as Served'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             ))}
         </div>
