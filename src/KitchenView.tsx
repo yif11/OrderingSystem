@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import { fetchOrders, markItemAsServed } from './api/orders';
-import { v4 as uuidv4 } from 'uuid';
+
+// 商品名を日本語に変換するためのマッピング
+const itemNameJaMap: { [key: string]: string } = {
+    hotCoffee: 'ホットコーヒー',
+    icedCoffee: 'アイスコーヒー',
+    hotTea: 'ホットティー',
+    icedTea: 'アイスティー',
+    pancake: 'パンケーキ',
+    croissant: 'クロワッサン',
+};
 
 // OrderItem型を定義
 type OrderItem = {
@@ -17,6 +26,7 @@ type Order = {
     isTakeout: boolean;
 };
 
+// SWRで注文データを取得
 const fetcher = async (): Promise<Order[]> => await fetchOrders();
 
 const KitchenView: React.FC = () => {
@@ -54,29 +64,27 @@ const KitchenView: React.FC = () => {
     };
 
     // ローカルデータの更新がない場合は、SWRから取得したデータを使う
-    if (error) return <div>Error loading orders.</div>;
-    if (!data || data.length === 0) return <div>No orders yet.</div>;
+    if (error) return <div>注文の読み込み中にエラーが発生しました。</div>;
+    if (!data || data.length === 0) return <div>注文はありません。</div>;
 
     const ordersToDisplay = localData || data;
 
     return (
         <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg border border-black">
-            <h2 className="text-3xl font-bold mb-4 text-center">Orders for Kitchen</h2>
+            <h2 className="text-3xl font-bold mb-4 text-center">提供待ち画面</h2>
             {ordersToDisplay.map((order) => (
                 <div key={order.id} className="mb-4">
-                    <h3 className="text-2xl font-semibold text-center">Order #{order.isTakeout ? `T${order.id}` : order.id}</h3>
+                    <h3 className="text-2xl font-semibold text-center">
+                        注文番号 #{order.isTakeout ? `T${order.id}` : order.id}
+                    </h3>
                     <table className="min-w-full border-collapse border border-gray-300">
-                        <thead>
-                            <tr>
-                                <th className="border border-gray-300 p-2">Item</th>
-                                <th className="border border-gray-300 p-2">Quantity</th>
-                                <th className="border border-gray-300 p-2">Actions</th>
-                            </tr>
-                        </thead>
                         <tbody>
                             {order.items.map((item, itemIndex) => (
                                 <tr key={`${order.id}-${itemIndex}`} className="border-b border-gray-200">
-                                    <td className="border border-gray-300 p-2">{item.item}</td>
+                                    <td className="border border-gray-300 p-2">
+                                        {/* 商品名を日本語で表示 */}
+                                        {itemNameJaMap[item.item] || item.item}
+                                    </td>
                                     <td className="border border-gray-300 p-2">{item.quantity}</td>
                                     <td className="border border-gray-300 p-2">
                                         <button
@@ -84,7 +92,7 @@ const KitchenView: React.FC = () => {
                                             className={`px-2 py-1 rounded ${item.served ? 'bg-gray-500' : 'bg-green-500'} text-white`}
                                             disabled={item.served}
                                         >
-                                            {item.served ? 'Served' : 'Mark as Served'}
+                                            {item.served ? '提供済み' : '提供する'}
                                         </button>
                                     </td>
                                 </tr>

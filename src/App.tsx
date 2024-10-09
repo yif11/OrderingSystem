@@ -15,13 +15,13 @@ const App: React.FC = () => {
           <nav>
             <ul className="nav-list">
               <li className="nav-item">
-                <Link to="/" className='font-bold'>Kitchen View</Link>
+                <Link to="/" className='font-bold'>キッチン画面</Link>
               </li>
               <li className="nav-item">
-                <Link to="/order" className='font-bold'>Order Input</Link>
+                <Link to="/order" className='font-bold'>注文画面</Link>
               </li>
               <li className="nav-item">
-                <Link to="/served" className='font-bold'>Served Orders View</Link>
+                <Link to="/served" className='font-bold'>提供済み</Link>
               </li>
             </ul>
           </nav>

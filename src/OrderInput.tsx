@@ -10,6 +10,16 @@ const productPrices = {
     croissant: 100,
 };
 
+// 日本語の商品名マッピング
+const productNamesJa: Record<string, string> = {
+    hotCoffee: "ホットコーヒー",
+    icedCoffee: "アイスコーヒー",
+    hotTea: "ホットティー",
+    icedTea: "アイスティー",
+    pancake: "パンケーキ",
+    croissant: "クロワッサン",
+};
+
 const OrderInput: React.FC = () => {
     const [orders, setOrders] = useState({
         hotCoffee: 0,
@@ -91,7 +101,7 @@ const OrderInput: React.FC = () => {
             <div className="mb-4">
                 <h3 className="text-lg font-semibold">コーヒー</h3>
                 <div className="flex justify-between items-center">
-                    <span>ホットコーヒー(¥{productPrices.hotCoffee})</span>
+                    <span>{productNamesJa.hotCoffee}(¥{productPrices.hotCoffee})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('hotCoffee', orders.hotCoffee - 1)}
@@ -109,7 +119,7 @@ const OrderInput: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span>アイスコーヒー (¥{productPrices.icedCoffee})</span>
+                    <span>{productNamesJa.icedCoffee} (¥{productPrices.icedCoffee})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('icedCoffee', orders.icedCoffee - 1)}
@@ -132,7 +142,7 @@ const OrderInput: React.FC = () => {
             <div className="mb-4">
                 <h3 className="text-lg font-semibold">紅茶</h3>
                 <div className="flex justify-between items-center">
-                    <span>ホットティー(¥{productPrices.hotTea})</span>
+                    <span>{productNamesJa.hotTea}(¥{productPrices.hotTea})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('hotTea', orders.hotTea - 1)}
@@ -150,7 +160,7 @@ const OrderInput: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span>アイスティー (¥{productPrices.icedTea})</span>
+                    <span>{productNamesJa.icedTea} (¥{productPrices.icedTea})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('icedTea', orders.icedTea - 1)}
@@ -173,7 +183,7 @@ const OrderInput: React.FC = () => {
             <div className="mb-4">
                 <h3 className="text-lg font-semibold">フード</h3>
                 <div className="flex justify-between items-center">
-                    <span>パンケーキ(¥{productPrices.pancake})</span>
+                    <span>{productNamesJa.pancake}(¥{productPrices.pancake})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('pancake', orders.pancake - 1)}
@@ -191,7 +201,7 @@ const OrderInput: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span>クロッフル(¥{productPrices.croissant})</span>
+                    <span>{productNamesJa.croissant}(¥{productPrices.croissant})</span>
                     <div className="flex items-center">
                         <button
                             onClick={() => updateOrder('croissant', orders.croissant - 1)}
@@ -232,23 +242,23 @@ const OrderInput: React.FC = () => {
                     value={receivedAmount}
                     onChange={(e) => setReceivedAmount(e.target.value)} // 文字列として保存
                     className="w-full p-2 border rounded"
-                    placeholder="Enter received amount"
+                    placeholder="受取金額を入力してください"
                 />
             </div>
 
-            <div className="mt-4 text-lg">
+            <div className="mt-6 text-xl font-bold">
                 お釣り: ¥{change >= 0 ? change : 0}
             </div>
 
+            {/* 注文ボタン */}
             <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="mt-6 bg-blue-500 text-white px-4 py-2 rounded w-full"
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded w-full"
             >
-                {loading ? 'Processing...' : 'Place Order'}
+                {loading ? '処理中...' : '注文を確定する'}
             </button>
         </div>
-
     );
 };
 
