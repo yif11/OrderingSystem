@@ -32,14 +32,20 @@ if (!fs.existsSync(maxOrderIdPath)) {
 const readMaxOrderId = () => parseInt(fs.readFileSync(maxOrderIdPath, 'utf8'), 10);
 const writeMaxOrderId = (id) => fs.writeFileSync(maxOrderIdPath, id.toString(), 'utf8');
 
-// アイテム名の日本語マッピング
-const itemNameMapping = {
-    hotCoffee: 'ﾎｯﾄｺｰﾋｰ',
-    icedCoffee: 'ｱｲｽｺｰﾋｰ',
-    hotTea: 'ﾎｯﾄﾃｨｰ',
-    icedTea: 'ｱｲｽﾃｨｰ',
-    pancake: 'ﾊﾟﾝｹｰｷ',
-    croissant: 'ｸﾛﾜｯｻﾝ',
+const itemMapJa = {
+    hotCoffee: 'ホットコーヒー',
+    icedCoffee: 'アイスコーヒー',
+    caffeLatte: 'カフェラテ',
+    hotTea: '紅茶(ホット)',
+    icedTea: '紅茶(アイス)',
+    orangeJuice: 'オレンジジュース',
+    appleJuice: 'アップルジュース',
+    calpis: 'カルピス',
+    greenTea: '緑茶',
+    chocolateCroffle: 'クロッフル(チョコ)',
+    mapleCroffle: 'クロッフル(メープル)',
+    greenTeaCroffle: 'クロッフル(抹茶)',
+    strawberryCroffle: 'クロッフル(いちご)'
 };
 
 // 注文の取得
@@ -82,11 +88,8 @@ const generateReceipt = (order, maxOrderId) => {
     `;
 
     order.items.forEach(item => {
-        const price = item.price * item.quantity;
-        quantity += item.quantity;
-        // item.itemを日本語化する
-        const itemNameInJapanese = itemNameMapping[item.item] || item.item; // マッピングがない場合は英語名を使用
-        receiptText += `| |${itemNameInJapanese} x${item.quantity} | ￥${price}| |\n`;
+        quantity += 1;
+        receiptText += `| |${itemMapJa[item.item]} | ￥${item.price}| |\n`;
     });
 
     receiptText += `
@@ -215,7 +218,6 @@ app.post('/add-order', (req, res) => {
             return;
         }
         console.log(`stdout: ${stdout}`);
-
     });
 
     res.status(201).json({ message: 'Order added and receipt generated', svgFile: receiptSvgFilePath });

@@ -1,5 +1,5 @@
-// const apiUrl = 'http://localhost:5000';  // サーバーのURL
-const apiUrl = 'http://192.168.3.4:5000';
+const apiUrl = 'http://localhost:5000';  // サーバーのURL
+// const apiUrl = 'http://192.168.3.4:5000';
 
 export const fetchOrders = async () => {
     const response = await fetch(`${apiUrl}/orders`);
@@ -13,7 +13,7 @@ export const fetchServedOrders = async () => {
     return await response.json();
 };
 
-export const addOrder = async (orderData: { items: { item: string; quantity: number }[], totalPrice: number, receivedAmount: number, change: number }) => {
+export const addOrder = async (orderData: { items: { item: string }[], totalPrice: number, receivedAmount: number, change: number }) => {
     const response = await fetch(`${apiUrl}/add-order`, {
         method: 'POST',
         headers: {
