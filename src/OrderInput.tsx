@@ -419,7 +419,7 @@ const OrderInput: React.FC = () => {
                 disabled={loading}
                 className="mt-6 bg-blue-500 text-white px-4 py-2 rounded w-full"
             >
-                {loading ? 'Processing...' : 'Place Order'}
+                {loading ? 'Processing...' : '注文を送信'}
             </button>
         </div>
 
