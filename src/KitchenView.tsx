@@ -69,7 +69,7 @@ const KitchenView: React.FC = () => {
                                 className={`ml-4 px-2 py-1 rounded ${item.served ? 'bg-gray-500' : 'bg-green-500'} text-white`}
                                 disabled={item.served}
                             >
-                                {item.served ? 'Served' : 'Mark as Served'}
+                                {item.served ? 'Served' : '提供しました'}
                             </button>
                         </div>
                     ))}
