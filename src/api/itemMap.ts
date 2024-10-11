@@ -1,7 +1,7 @@
 export const itemMapJa: { [key: string]: string } = {
     hotCoffee: 'ホットコーヒー',
     icedCoffee: 'アイスコーヒー',
-    caffeLatte: 'カフェラテ',
+    cafeAuLait: 'カフェオレ(アイス)',
     hotTea: '紅茶(ホット)',
     icedTea: '紅茶(アイス)',
     orangeJuice: 'オレンジジュース',
@@ -11,5 +11,6 @@ export const itemMapJa: { [key: string]: string } = {
     chocolateCroffle: 'クロッフル(チョコ)',
     mapleCroffle: 'クロッフル(メープル)',
     greenTeaCroffle: 'クロッフル(抹茶)',
-    strawberryCroffle: 'クロッフル(いちご)'
+    strawberryCroffle: 'クロッフル(いちご)',
+    plainCroffle: 'クロッフル(プレーン)'
 };

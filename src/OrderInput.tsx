@@ -4,7 +4,7 @@ import { addOrder } from './api/orders';
 const productPrices = {
     hotCoffee: 300,
     icedCoffee: 300,
-    caffeLatte: 350,
+    cafeAuLait: 350,
     hotTea: 300,
     icedTea: 300,
     orangeJuice: 200,
@@ -14,14 +14,15 @@ const productPrices = {
     chocolateCroffle: 400,
     mapleCroffle: 400,
     greenTeaCroffle: 400,
-    strawberryCroffle: 400
+    strawberryCroffle: 400,
+    plainCroffle: 400
 };
 
 const OrderInput: React.FC = () => {
     const [orders, setOrders] = useState({
         hotCoffee: 0,
         icedCoffee: 0,
-        caffeLatte: 0,
+        cafeAuLait: 0,
         hotTea: 0,
         icedTea: 0,
         orangeJuice: 0,
@@ -31,7 +32,8 @@ const OrderInput: React.FC = () => {
         chocolateCroffle: 0,
         mapleCroffle: 0,
         greenTeaCroffle: 0,
-        strawberryCroffle: 0
+        strawberryCroffle: 0,
+        plainCroffle: 0
     });
     const [totalPrice, setTotalPrice] = useState(0);
     const [receivedAmount, setReceivedAmount] = useState<string>(""); // 初期値を空文字に変更
@@ -87,7 +89,7 @@ const OrderInput: React.FC = () => {
         setOrders({
             hotCoffee: 0,
             icedCoffee: 0,
-            caffeLatte: 0,
+            cafeAuLait: 0,
             hotTea: 0,
             icedTea: 0,
             orangeJuice: 0,
@@ -97,7 +99,8 @@ const OrderInput: React.FC = () => {
             chocolateCroffle: 0,
             mapleCroffle: 0,
             greenTeaCroffle: 0,
-            strawberryCroffle: 0
+            strawberryCroffle: 0,
+            plainCroffle: 0
         });
         setReceivedAmount("");
         setIsTakeout(false);
@@ -149,17 +152,17 @@ const OrderInput: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span>カフェラテ (¥{productPrices.caffeLatte})</span>
+                    <span>カフェオレ(アイス) (¥{productPrices.cafeAuLait})</span>
                     <div className="flex items-center">
                         <button
-                            onClick={() => updateOrder('caffeLatte', orders.caffeLatte - 1)}
+                            onClick={() => updateOrder('cafeAuLait', orders.cafeAuLait - 1)}
                             className="bg-red-500 text-white px-3 py-1 rounded-l"
                         >
                             -
                         </button>
-                        <span className="px-4">{orders.caffeLatte}</span>
+                        <span className="px-4">{orders.cafeAuLait}</span>
                         <button
-                            onClick={() => updateOrder('caffeLatte', orders.caffeLatte + 1)}
+                            onClick={() => updateOrder('cafeAuLait', orders.cafeAuLait + 1)}
                             className="bg-green-500 text-white px-3 py-1 rounded-r"
                         >
                             +
@@ -355,6 +358,24 @@ const OrderInput: React.FC = () => {
                         <span className="px-4">{orders.strawberryCroffle}</span>
                         <button
                             onClick={() => updateOrder('strawberryCroffle', orders.strawberryCroffle + 1)}
+                            className="bg-green-500 text-white px-3 py-1 rounded-r"
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+                <div className="flex justify-between items-center">
+                    <span>クロッフル(プレーン) (¥{productPrices.plainCroffle})</span>
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => updateOrder('plainCroffle', orders.plainCroffle - 1)}
+                            className="bg-red-500 text-white px-3 py-1 rounded-l"
+                        >
+                            -
+                        </button>
+                        <span className="px-4">{orders.plainCroffle}</span>
+                        <button
+                            onClick={() => updateOrder('plainCroffle', orders.plainCroffle + 1)}
                             className="bg-green-500 text-white px-3 py-1 rounded-r"
                         >
                             +

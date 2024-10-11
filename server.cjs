@@ -35,7 +35,7 @@ const writeMaxOrderId = (id) => fs.writeFileSync(maxOrderIdPath, id.toString(), 
 const itemMapJa = {
     hotCoffee: 'ホットコーヒー',
     icedCoffee: 'アイスコーヒー',
-    caffeLatte: 'カフェラテ',
+    cafeAuLait: 'カフェオレ(アイス)',
     hotTea: '紅茶(ホット)',
     icedTea: '紅茶(アイス)',
     orangeJuice: 'オレンジジュース',
@@ -45,7 +45,8 @@ const itemMapJa = {
     chocolateCroffle: 'クロッフル(チョコ)',
     mapleCroffle: 'クロッフル(メープル)',
     greenTeaCroffle: 'クロッフル(抹茶)',
-    strawberryCroffle: 'クロッフル(いちご)'
+    strawberryCroffle: 'クロッフル(いちご)',
+    plainCroffle: 'クロッフル(プレーン)'
 };
 
 // 注文の取得
