@@ -18,6 +18,8 @@ const productPrices = {
     plainCroffle: 400
 };
 
+const DISCOUNT_PER_COUPON = 300; // 1枚あたりの割引額
+
 const OrderInput: React.FC = () => {
     const [orders, setOrders] = useState({
         hotCoffee: 0,
@@ -40,14 +42,15 @@ const OrderInput: React.FC = () => {
     const [change, setChange] = useState(0);
     const [loading, setLoading] = useState(false);
     const [isTakeout, setIsTakeout] = useState(false);
+    const [discountCoupons, setDiscountCoupons] = useState(0); // 割引券の数
 
     useEffect(() => {
         const newTotal = Object.entries(orders).reduce(
             (total, [item, quantity]) => total + productPrices[item as keyof typeof orders] * quantity,
             0
-        );
-        setTotalPrice(newTotal);
-    }, [orders]);
+        ) - discountCoupons * DISCOUNT_PER_COUPON;
+        setTotalPrice(newTotal > 0 ? newTotal : 0); // 割引が合計金額を超えないように調整
+    }, [orders, discountCoupons]);
 
     useEffect(() => {
         const received = Number(receivedAmount) || 0; // 空のフィールドを考慮して数値に変換
@@ -105,8 +108,8 @@ const OrderInput: React.FC = () => {
         setReceivedAmount("");
         setIsTakeout(false);
         setLoading(false);
+        setDiscountCoupons(0); // 割引券もリセット
     };
-
 
     return (
         <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
@@ -394,11 +397,33 @@ const OrderInput: React.FC = () => {
                 />
             </div>
 
+            {/* 割引券の数を調整するプラス・マイナスボタン */}
+            <div className="mb-4">
+                <h3 className="text-lg font-semibold">どりーむきっず用割引券</h3>
+                <div className="flex items-center">
+                    <button
+                        onClick={() => setDiscountCoupons((prev) => Math.max(0, prev - 1))}
+                        className="bg-red-500 text-white px-3 py-1 rounded-l"
+                    >
+                        -
+                    </button>
+                    <span className="px-4">{discountCoupons}</span>
+                    <button
+                        onClick={() => setDiscountCoupons((prev) => prev + 1)}
+                        className="bg-green-500 text-white px-3 py-1 rounded-r"
+                    >
+                        +
+                    </button>
+                </div>
+                <p className="text-gray-600">1枚につき¥{DISCOUNT_PER_COUPON}の割引</p>
+            </div>
+
             {/* 合計金額の表示 */}
             <div className="mt-6 text-xl font-bold text-center">
                 合計金額: ¥{totalPrice}
             </div>
 
+            {/* お預かり金額の入力 */}
             <div className="mt-4">
                 <label className="block text-lg font-medium mb-2">お預かり金額</label>
                 <input
@@ -410,10 +435,12 @@ const OrderInput: React.FC = () => {
                 />
             </div>
 
+            {/* お釣りの表示 */}
             <div className="mt-4 text-lg">
                 お釣り: ¥{change >= 0 ? change : 0}
             </div>
 
+            {/* 注文を送信 */}
             <button
                 onClick={handleSubmit}
                 disabled={loading}
@@ -422,7 +449,6 @@ const OrderInput: React.FC = () => {
                 {loading ? 'Processing...' : '注文を送信'}
             </button>
         </div>
-
     );
 };
 

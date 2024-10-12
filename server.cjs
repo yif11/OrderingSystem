@@ -209,17 +209,17 @@ app.post('/add-order', (req, res) => {
     const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
     // Chromeをkiosk-printingモードで起動して印刷
-    exec(`"${chromePath}" --kiosk-printing --no-default-browser-check --disable-extensions "file:///${htmlFilePath.replace(/\\/g, '/')}"`, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error opening Chrome: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`stderr: ${stderr}`);
-            return;
-        }
-        console.log(`stdout: ${stdout}`);
-    });
+    // exec(`"${chromePath}" --kiosk-printing --no-default-browser-check --disable-extensions "file:///${htmlFilePath.replace(/\\/g, '/')}"`, (error, stdout, stderr) => {
+    //     if (error) {
+    //         console.error(`Error opening Chrome: ${error.message}`);
+    //         return;
+    //     }
+    //     if (stderr) {
+    //         console.error(`stderr: ${stderr}`);
+    //         return;
+    //     }
+    //     console.log(`stdout: ${stdout}`);
+    // });
 
     res.status(201).json({ message: 'Order added and receipt generated', svgFile: receiptSvgFilePath });
 });
