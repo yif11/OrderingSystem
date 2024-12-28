@@ -221,6 +221,21 @@ app.post('/add-order', (req, res) => {
     //     console.log(`stdout: ${stdout}`);
     // });
 
+    const exePath = "C:/Users/yifdt/Downloads/WinFormsApp3.exe";
+
+    // 管理者権限で実行
+    exec(`powershell -Command "Start-Process '${exePath}' -Verb runAs"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error executing file: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            return;
+        }
+        console.log(`stdout: ${stdout}`);
+    });
+
     res.status(201).json({ message: 'Order added and receipt generated', svgFile: receiptSvgFilePath });
 });
 

@@ -66,7 +66,7 @@ const KitchenView: React.FC = () => {
                             <span>{itemMapJa[item.item]}</span>
                             <button
                                 onClick={() => handleServeItem(order.id, itemIndex)}
-                                className={`ml-4 px-2 py-1 rounded ${item.served ? 'bg-gray-500' : 'bg-green-500'} text-white`}
+                                className={`ml-4 mb-2 px-2 py-1 rounded ${item.served ? 'bg-gray-500' : 'bg-green-500'} text-white`}
                                 disabled={item.served}
                             >
                                 {item.served ? 'Served' : '提供しました'}
