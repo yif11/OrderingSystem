@@ -144,69 +144,69 @@ app.post('/add-order', (req, res) => {
     writeOrders(orders);
     writeMaxOrderId(maxOrderId + 1); // 最大IDを更新
 
-    // レシートデータ生成
-    const receiptDoc = generateReceipt(newOrder, maxOrderId);
-    const orderIdDoc = generateOrderId(newOrder, maxOrderId);
+    // // レシートデータ生成
+    // const receiptDoc = generateReceipt(newOrder, maxOrderId);
+    // const orderIdDoc = generateOrderId(newOrder, maxOrderId);
 
-    // SVG出力用設定
-    const displaySettings = {
-        cpl: 42,
-        encoding: 'cp932'
-    };
+    // // SVG出力用設定
+    // const displaySettings = {
+    //     cpl: 42,
+    //     encoding: 'cp932'
+    // };
 
-    // レシートをSVGに変換
-    const receiptSvg = receiptline.transform(receiptDoc, displaySettings);
-    const orderIdSvg = receiptline.transform(orderIdDoc, displaySettings);
+    // // レシートをSVGに変換
+    // const receiptSvg = receiptline.transform(receiptDoc, displaySettings);
+    // const orderIdSvg = receiptline.transform(orderIdDoc, displaySettings);
 
-    // SVGファイルとして保存
-    const receiptSvgFilePath = path.join(__dirname, `receipts/receipt-${newOrder.id}.svg`);
-    const orderIdSvgFilePath = path.join(__dirname, `receipts/order_ids/order-id-${newOrder.id}.svg`);
+    // // SVGファイルとして保存
+    // const receiptSvgFilePath = path.join(__dirname, `receipts/receipt-${newOrder.id}.svg`);
+    // const orderIdSvgFilePath = path.join(__dirname, `receipts/order_ids/order-id-${newOrder.id}.svg`);
 
-    // SVGファイルに書き込み
-    fs.writeFileSync(receiptSvgFilePath, receiptSvg, 'utf8');
-    fs.writeFileSync(orderIdSvgFilePath, orderIdSvg, 'utf8');
+    // // SVGファイルに書き込み
+    // fs.writeFileSync(receiptSvgFilePath, receiptSvg, 'utf8');
+    // fs.writeFileSync(orderIdSvgFilePath, orderIdSvg, 'utf8');
 
-    // プレビュー用HTMLの作成
-    const htmlFilePath = path.join(__dirname, 'preview.html');
+    // // プレビュー用HTMLの作成
+    // const htmlFilePath = path.join(__dirname, 'preview.html');
 
-    const htmlContent = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Print Preview</title>
-        </head>
-        <body>
-            <div id="content">
-                <img id="images" src="file:///${receiptSvgFilePath.replace(/\\/g, '/')}" alt="Receipt" style="width: 100%; height: auto;" />
-            </div>
+    // const htmlContent = `
+    //     <!DOCTYPE html>
+    //     <html lang="en">
+    //     <head>
+    //         <meta charset="UTF-8">
+    //         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    //         <title>Print Preview</title>
+    //     </head>
+    //     <body>
+    //         <div id="content">
+    //             <img id="images" src="file:///${receiptSvgFilePath.replace(/\\/g, '/')}" alt="Receipt" style="width: 100%; height: auto;" />
+    //         </div>
 
-            <script>
-                window.onload = function() {
-                    window.print();
-                };
+    //         <script>
+    //             window.onload = function() {
+    //                 window.print();
+    //             };
 
-                window.onafterprint = function() {
-                    var imageElement = document.getElementById('images');
-                    imageElement.src = "file:///${orderIdSvgFilePath.replace(/\\/g, '/')}";
+    //             window.onafterprint = function() {
+    //                 var imageElement = document.getElementById('images');
+    //                 imageElement.src = "file:///${orderIdSvgFilePath.replace(/\\/g, '/')}";
 
-                    setTimeout(function() {
-                        window.print();
-                        setTimeout(function() {
-                            window.close();
-                        }, 100);
-                    }, 500);
-                };
-            </script>
-        </body>
-        </html>
-    `;
+    //                 setTimeout(function() {
+    //                     window.print();
+    //                     setTimeout(function() {
+    //                         window.close();
+    //                     }, 100);
+    //                 }, 500);
+    //             };
+    //         </script>
+    //     </body>
+    //     </html>
+    // `;
 
-    // HTMLファイルを作成
-    fs.writeFileSync(htmlFilePath, htmlContent, 'utf8');
+    // // HTMLファイルを作成
+    // fs.writeFileSync(htmlFilePath, htmlContent, 'utf8');
 
-    const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+    // const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
     // Chromeをkiosk-printingモードで起動して印刷
     // exec(`"${chromePath}" --kiosk-printing --no-default-browser-check --disable-extensions "file:///${htmlFilePath.replace(/\\/g, '/')}"`, (error, stdout, stderr) => {
@@ -220,6 +220,8 @@ app.post('/add-order', (req, res) => {
     //     }
     //     console.log(`stdout: ${stdout}`);
     // });
+
+    ordersJSON = JSON.stringify(newOrder);
 
     const exePath = "C:/Users/yifdt/Downloads/WinFormsApp3.exe";
 
