@@ -221,12 +221,56 @@ app.post('/add-order', (req, res) => {
     //     console.log(`stdout: ${stdout}`);
     // });
 
-    ordersJSON = JSON.stringify(newOrder);
-
     const exePath = "C:/Users/yifdt/Downloads/WinFormsApp3.exe";
 
-    // 管理者権限で実行
-    exec(`powershell -Command "Start-Process '${exePath}' -Verb runAs"`, (error, stdout, stderr) => {
+    ordersJSON = JSON.stringify(newOrder);
+    // const escapedJSON = ordersJSON.replace(/"/g, '""');
+    const escapedJSON = ordersJSON.replace(/"/g, '\\"');
+    console.log(ordersJSON);
+    console.log("aaa");
+    console.log(escapedJSON);
+
+    // exec(`powershell -Command "Start-Process '${exePath}' -ArgumentList '${escapedJSON}' -Verb runAs"`, (error, stdout, stderr) => {
+    // exec(`powershell -Command "Start-Process '${exePath}' -ArgumentList "{""id"":45,""items"":[{""item"":""hotCoffee"",""price"":300}],""totalPrice"":300,""receivedAmount"":1,""change"":-299,""isTakeout"":false}" -Verb runAs"`, (error, stdout, stderr) => {
+    // exec(`powershell -Command "Start-Process '${exePath}' -ArgumentList '\\"${escapedJSON}\\"' -Verb runAs"`, (error, stdout, stderr) => {
+    //     // exec(`powershell -Command "Start-Process '${exePath}' -Verb runAs"`, (error, stdout, stderr) => {
+    //     if (error) {
+    //         console.error(`Error executing file: ${error.message}`);
+    //         return;
+    //     }
+    //     if (stderr) {
+    //         console.error(`stderr: ${stderr}`);
+    //         return;
+    //     }
+    //     console.log(`stdout: ${stdout}`);
+    // });
+
+    // const command = `powershell -Command "Start-Process '${exePath}' -ArgumentList "${escapedJSON}" -Verb runAs"`;
+
+    // exec(command, (error, stdout, stderr) => {
+    //     if (error) {
+    //         console.error(`Error executing file: ${error.message}`);
+    //         return;
+    //     }
+    //     if (stderr) {
+    //         console.error(`stderr: ${stderr}`);
+    //         return;
+    //     }
+    //     console.log(`stdout: ${stdout}`);
+    // });
+
+    // JSONを一時ファイルに保存
+    const tempJsonFile = path.join(__dirname, 'temp_order.json');
+    fs.writeFileSync(tempJsonFile, JSON.stringify(newOrder, null, 2));
+
+    console.log(`Temporary JSON file created at: ${tempJsonFile}`);
+
+    // PowerShellコマンド
+    const command = `powershell -Command "& { Start-Process -FilePath '${exePath}' -ArgumentList '${tempJsonFile}' -Verb RunAs }"`;
+
+    console.log("Generated Command:", command);
+
+    exec(command, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error executing file: ${error.message}`);
             return;
@@ -238,8 +282,27 @@ app.post('/add-order', (req, res) => {
         console.log(`stdout: ${stdout}`);
     });
 
-    res.status(201).json({ message: 'Order added and receipt generated', svgFile: receiptSvgFilePath });
+    // const ret = execSync('command here', {'shell':'powershell.exe'}).toString()
+
+    // exec('"${exePath}" "${escapedJSON}"', { 'shell': 'powershell.exe' }, (error, stdout, stderr) => {
+    // exec(`.\"${exePath}" '${escapedJSON}'`, { shell: 'powershell.exe' }, (error, stdout, stderr) => {
+    // exec(`"${exePath}" "${escapedJSON}"`, (error, stdout, stderr) => {
+    // exec(`"C:/Users/yifdt/Downloads/WinFormsApp3.exe" "{""id"":45,""items"":[{""item"":""hotCoffee"",""price"":300}],""totalPrice"":300,""receivedAmount"":1,""change"":-299,""isTakeout"":false}"`, (error, stdout, stderr) => {
+    // exec(`C:/Users/yifdt/Downloads/WinFormsApp3.exe`, (error, stdout, stderr) => {
+    //     if (error) {
+    //         console.error(`Error executing file: ${error.message}`);
+    //         return;
+    //     }
+    //     if (stderr) {
+    //         console.error(`stderr: ${stderr}`);
+    //         return;
+    //     }
+    //     console.log(`stdout: ${stdout}`);
+    // });
+
+    res.status(201).json({ message: 'Order added and receipt generated' });
 });
+
 
 // 注文アイテムを提供済みにマーク
 app.post('/mark-served', (req, res) => {
