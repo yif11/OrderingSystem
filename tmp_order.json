@@ -1,0 +1,17 @@
+{
+  "id": 93,
+  "items": [
+    {
+      "item": "chocolateCroffle",
+      "price": 400
+    },
+    {
+      "item": "plainCroffle",
+      "price": 400
+    }
+  ],
+  "totalPrice": 800,
+  "receivedAmount": 2222,
+  "change": 1422,
+  "isTakeout": false
+}
