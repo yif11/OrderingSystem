@@ -24,7 +24,4 @@ dist-ssr
 *.sw?
 
 printReceipt.exe
-maxOrderId.txt
-orders.json
-served-orders.json
-tmp-order.json
+order_logs/*
