@@ -65,7 +65,7 @@ app.post('/add-order', (req, res) => {
     writeOrders(orders);
     writeMaxOrderId(maxOrderId + 1);
 
-    const exePath = "C:/Users/yifdt/Downloads/WinFormsApp3.exe";
+    const exePath = "./src/assets/printReceipt.exe";
 
     ordersJSON = JSON.stringify(newOrder);
     const escapedJSON = ordersJSON.replace(/"/g, '\\"');
@@ -74,7 +74,7 @@ app.post('/add-order', (req, res) => {
     console.log(escapedJSON);
 
     // JSONを一時ファイルに保存
-    const tempJsonFile = path.join(__dirname, 'tmp_order.json');
+    const tempJsonFile = path.join(__dirname, 'tmp-order.json');
     fs.writeFileSync(tempJsonFile, JSON.stringify(newOrder, null, 2));
 
     const command = `powershell -Command "& { Start-Process -FilePath '${exePath}' -ArgumentList '${tempJsonFile}' -Verb RunAs }"`;

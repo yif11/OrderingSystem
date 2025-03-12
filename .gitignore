@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+printReceipt.exe
+maxOrderId.txt
+orders.json
+served-orders.json
+tmp-order.json

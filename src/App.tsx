@@ -1,7 +1,7 @@
 import React from 'react';
-import KitchenView from './KitchenView';
-import OrderInput from './OrderInput';
-import ServedOrdersView from './ServedOrdersView';
+import KitchenView from './components/KitchenView';
+import OrderInput from './components/OrderInput';
+import ServedOrdersView from './components/ServedOrdersView';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 
 const App: React.FC = () => {
