@@ -37,25 +37,25 @@ const OrderInput: React.FC = () => {
         strawberryCroffle: 0,
         plainCroffle: 0
     });
-    const [totalPrice, setTotalPrice] = useState(0);
+    // const [totalPrice, setTotalPrice] = useState(0);
     const [receivedAmount, setReceivedAmount] = useState<string>(""); // 初期値を空文字に変更
-    const [change, setChange] = useState(0);
+    // const [change, setChange] = useState(0);
     const [loading, setLoading] = useState(false);
     const [isTakeout, setIsTakeout] = useState(false);
-    const [discountCoupons, setDiscountCoupons] = useState(0); // 割引券の数
+    const [couponCount, setDiscountCoupons] = useState(0); // 割引券の数
 
-    useEffect(() => {
-        const newTotal = Object.entries(orders).reduce(
+    const totalPrice = (() => {
+        const newTotalPrice = Object.entries(orders).reduce(
             (total, [item, quantity]) => total + productPrices[item as keyof typeof orders] * quantity,
             0
-        ) - discountCoupons * DISCOUNT_PER_COUPON;
-        setTotalPrice(newTotal > 0 ? newTotal : 0); // 割引が合計金額を超えないように調整
-    }, [orders, discountCoupons]);
+        ) - couponCount * DISCOUNT_PER_COUPON;
+        return (newTotalPrice > 0 ? newTotalPrice : 0);
+    })();
 
-    useEffect(() => {
+    const change = (() => {
         const received = Number(receivedAmount) || 0; // 空のフィールドを考慮して数値に変換
-        setChange(received - totalPrice);
-    }, [receivedAmount, totalPrice]);
+        return (received - totalPrice);
+    })();
 
     const updateOrder = (item: keyof typeof orders, quantity: number) => {
         setOrders((prevOrders) => ({
@@ -407,7 +407,7 @@ const OrderInput: React.FC = () => {
                     >
                         -
                     </button>
-                    <span className="px-4">{discountCoupons}</span>
+                    <span className="px-4">{couponCount}</span>
                     <button
                         onClick={() => setDiscountCoupons((prev) => prev + 1)}
                         className="bg-green-500 text-white px-3 py-1 rounded-r"
