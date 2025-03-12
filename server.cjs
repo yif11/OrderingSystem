@@ -20,7 +20,7 @@ const writeOrders = (orders) => fs.writeFileSync(ordersFilePath, JSON.stringify(
 const readServedOrders = () => JSON.parse(fs.readFileSync(servedOrdersFilePath, 'utf8'));
 const writeServedOrders = (orders) => fs.writeFileSync(servedOrdersFilePath, JSON.stringify(orders), 'utf8');
 
-const maxOrderIdPath = path.join(__dirname, 'order_logs/maxOrderId.txt');
+const maxOrderIdPath = path.join(__dirname, 'order_logs/max-order-id.txt');
 
 // maxOrderIdが保存されていない場合、1から始める
 if (!fs.existsSync(maxOrderIdPath)) {
