@@ -1,10 +1,8 @@
 import React from 'react';
 import useSWR from 'swr';
-import { fetchServedOrders } from './api/orders';
-import { itemMapJa } from './api/itemMap';
-import { v4 as uuidv4 } from 'uuid';
+import { fetchServedOrders } from '../api/orders';
+import { itemMapJa } from '../api/itemMap';
 
-// OrderItem型とOrder型を再利用
 type OrderItem = {
     item: string;
     quantity: number;
@@ -34,7 +32,7 @@ const ServedOrdersView: React.FC = () => {
                 <div key={order.id} className="mb-4">
                     <h3 className="text-2xl font-semibold">Order #{order.isTakeout ? `T${order.id}` : order.id}</h3>
                     {order.items.map((item) => (
-                        <div key={uuidv4()} className="flex justify-between items-center">
+                        <div className="flex justify-between items-center">
                             <span>{itemMapJa[item.item]}</span>
                         </div>
                     ))}

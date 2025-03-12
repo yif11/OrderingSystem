@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { addOrder } from './api/orders';
+import { addOrder } from '../api/orders';
 
 const productPrices = {
     hotCoffee: 300,
@@ -72,15 +72,15 @@ const OrderInput: React.FC = () => {
             .flatMap(([item, quantity]) =>
                 Array.from({ length: quantity }).map(() => ({
                     item,
-                    served: false, // 初期状態はすべて未提供
-                    price: productPrices[item as keyof typeof orders] // 単価を追加
+                    served: false,
+                    price: productPrices[item as keyof typeof orders]
                 }))
             );
 
         const orderData = {
             items: orderItems,
             totalPrice,
-            receivedAmount: Number(receivedAmount), // 送信時には数値に変換
+            receivedAmount: Number(receivedAmount),
             change,
             isTakeout
         };
@@ -108,7 +108,7 @@ const OrderInput: React.FC = () => {
         setReceivedAmount("");
         setIsTakeout(false);
         setLoading(false);
-        setDiscountCoupons(0); // 割引券もリセット
+        setDiscountCoupons(0);
     };
 
     return (
@@ -397,7 +397,7 @@ const OrderInput: React.FC = () => {
                 />
             </div>
 
-            {/* 割引券の数を調整するプラス・マイナスボタン */}
+            {/* 割引券 */}
             <div className="mb-4">
                 <h3 className="text-lg font-semibold">どりーむきっず用割引券</h3>
                 <div className="flex items-center">
@@ -418,12 +418,12 @@ const OrderInput: React.FC = () => {
                 <p className="text-gray-600">1枚につき¥{DISCOUNT_PER_COUPON}の割引</p>
             </div>
 
-            {/* 合計金額の表示 */}
+            {/* 合計金額 */}
             <div className="mt-6 text-xl font-bold text-center">
                 合計金額: ¥{totalPrice}
             </div>
 
-            {/* お預かり金額の入力 */}
+            {/* お預かり金額 */}
             <div className="mt-4">
                 <label className="block text-lg font-medium mb-2">お預かり金額</label>
                 <input
@@ -435,7 +435,7 @@ const OrderInput: React.FC = () => {
                 />
             </div>
 
-            {/* お釣りの表示 */}
+            {/* お釣り */}
             <div className="mt-4 text-lg">
                 お釣り: ¥{change >= 0 ? change : 0}
             </div>

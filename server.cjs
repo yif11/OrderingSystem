@@ -8,8 +8,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const ordersFilePath = path.join(__dirname, 'orders.json');
-const servedOrdersFilePath = path.join(__dirname, 'served-orders.json');
+const ordersFilePath = path.join(__dirname, 'order_logs/orders.json');
+const servedOrdersFilePath = path.join(__dirname, 'order_logs/served-orders.json');
 
 // ファイルが存在しない場合は空の配列で初期化
 if (!fs.existsSync(ordersFilePath)) fs.writeFileSync(ordersFilePath, '[]', 'utf8');
@@ -20,7 +20,7 @@ const writeOrders = (orders) => fs.writeFileSync(ordersFilePath, JSON.stringify(
 const readServedOrders = () => JSON.parse(fs.readFileSync(servedOrdersFilePath, 'utf8'));
 const writeServedOrders = (orders) => fs.writeFileSync(servedOrdersFilePath, JSON.stringify(orders), 'utf8');
 
-const maxOrderIdPath = path.join(__dirname, 'maxOrderId.txt');
+const maxOrderIdPath = path.join(__dirname, 'order_logs/max-order-id.txt');
 
 // maxOrderIdが保存されていない場合、1から始める
 if (!fs.existsSync(maxOrderIdPath)) {
@@ -65,7 +65,7 @@ app.post('/add-order', (req, res) => {
     writeOrders(orders);
     writeMaxOrderId(maxOrderId + 1);
 
-    const exePath = "C:/Users/yifdt/Downloads/WinFormsApp3.exe";
+    const exePath = "./src/assets/printReceipt.exe";
 
     ordersJSON = JSON.stringify(newOrder);
     const escapedJSON = ordersJSON.replace(/"/g, '\\"');
@@ -74,7 +74,7 @@ app.post('/add-order', (req, res) => {
     console.log(escapedJSON);
 
     // JSONを一時ファイルに保存
-    const tempJsonFile = path.join(__dirname, 'tmp_order.json');
+    const tempJsonFile = path.join(__dirname, 'order_logs/tmp-order.json');
     fs.writeFileSync(tempJsonFile, JSON.stringify(newOrder, null, 2));
 
     const command = `powershell -Command "& { Start-Process -FilePath '${exePath}' -ArgumentList '${tempJsonFile}' -Verb RunAs }"`;
