@@ -68,10 +68,7 @@ app.post('/add-order', (req, res) => {
     const exePath = "./src/assets/printReceipt.exe";
 
     ordersJSON = JSON.stringify(newOrder);
-    const escapedJSON = ordersJSON.replace(/"/g, '\\"');
     console.log(ordersJSON);
-    console.log("aaa");
-    console.log(escapedJSON);
 
     // JSONを一時ファイルに保存
     const tempJsonFile = path.join(__dirname, 'order_logs/tmp-order.json');
