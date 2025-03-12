@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { addOrder } from '../api/orders';
 
 const productPrices = {
@@ -37,9 +37,7 @@ const OrderInput: React.FC = () => {
         strawberryCroffle: 0,
         plainCroffle: 0
     });
-    // const [totalPrice, setTotalPrice] = useState(0);
     const [receivedAmount, setReceivedAmount] = useState<string>(""); // 初期値を空文字に変更
-    // const [change, setChange] = useState(0);
     const [loading, setLoading] = useState(false);
     const [isTakeout, setIsTakeout] = useState(false);
     const [couponCount, setDiscountCoupons] = useState(0); // 割引券の数
