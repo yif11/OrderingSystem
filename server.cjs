@@ -162,14 +162,25 @@ app.post('/add-order', (req, res) => {
     const receiptSvgFilePath = path.join(__dirname, `receipts/receipt-${newOrder.id}.svg`);
     const orderIdSvgFilePath = path.join(__dirname, `receipts/order_ids/order-id-${newOrder.id}.svg`);
 
-    // SVGファイルに書き込み
-    fs.writeFileSync(receiptSvgFilePath, receiptSvg, 'utf8');
-    fs.writeFileSync(orderIdSvgFilePath, orderIdSvg, 'utf8');
+    // 親ディレクトリが存在しない場合は作成する
+    try {
+        fs.mkdirSync(path.dirname(receiptSvgFilePath), { recursive: true });
+        fs.mkdirSync(path.dirname(orderIdSvgFilePath), { recursive: true });
+    } catch (err) {
+        console.error('Failed to create receipts directory:', err);
+        return res.status(500).json({ error: 'Server failed to prepare receipt directories' });
+    }
 
-    // プレビュー用HTMLの作成
-    const htmlFilePath = path.join(__dirname, 'preview.html');
+    // SVGファイルへの書き込みとプレビュー作成を安全に行う
+    try {
+        // SVGファイルに書き込み
+        fs.writeFileSync(receiptSvgFilePath, receiptSvg, 'utf8');
+        fs.writeFileSync(orderIdSvgFilePath, orderIdSvg, 'utf8');
 
-    const htmlContent = `
+        // プレビュー用HTMLの作成
+        const htmlFilePath = path.join(__dirname, 'preview.html');
+
+        const htmlContent = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -203,25 +214,29 @@ app.post('/add-order', (req, res) => {
         </html>
     `;
 
-    // HTMLファイルを作成
-    fs.writeFileSync(htmlFilePath, htmlContent, 'utf8');
+        // HTMLファイルを作成
+        fs.writeFileSync(htmlFilePath, htmlContent, 'utf8');
 
-    const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+        const chromePath = "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe";
 
-    // Chromeをkiosk-printingモードで起動して印刷
-    // exec(`"${chromePath}" --kiosk-printing --no-default-browser-check --disable-extensions "file:///${htmlFilePath.replace(/\\/g, '/')}"`, (error, stdout, stderr) => {
-    //     if (error) {
-    //         console.error(`Error opening Chrome: ${error.message}`);
-    //         return;
-    //     }
-    //     if (stderr) {
-    //         console.error(`stderr: ${stderr}`);
-    //         return;
-    //     }
-    //     console.log(`stdout: ${stdout}`);
-    // });
+        // Chromeをkiosk-printingモードで起動して印刷
+        exec(`"${chromePath}" --kiosk-printing --no-default-browser-check --disable-extensions "file:///${htmlFilePath.replace(/\\/g, '/')}"`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error opening Chrome: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+        });
 
-    res.status(201).json({ message: 'Order added and receipt generated', svgFile: receiptSvgFilePath });
+        res.status(201).json({ message: 'Order added and receipt generated', svgFile: receiptSvgFilePath });
+    } catch (err) {
+        console.error('Failed to write receipt or create preview:', err);
+        res.status(500).json({ error: 'Failed to generate receipt' });
+    }
 });
 
 // 注文アイテムを提供済みにマーク
