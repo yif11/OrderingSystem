@@ -33,20 +33,15 @@ const readMaxOrderId = () => parseInt(fs.readFileSync(maxOrderIdPath, 'utf8'), 1
 const writeMaxOrderId = (id) => fs.writeFileSync(maxOrderIdPath, id.toString(), 'utf8');
 
 const itemMapJa = {
-    hotCoffee: 'ホットコーヒー',
-    icedCoffee: 'アイスコーヒー',
-    cafeAuLait: 'カフェオレ(アイス)',
-    hotTea: '紅茶(ホット)',
-    icedTea: '紅茶(アイス)',
-    orangeJuice: 'オレンジジュース',
-    appleJuice: 'アップルジュース',
+    icedCoffee: 'コーヒー（アイス）',
+    hotCoffee: 'コーヒー（ホット）',
+    cafeAuLait: 'アイスカフェオレ',
+    icedTea: '紅茶（アイス）',
+    hotTea: '紅茶（ホット）',
     calpis: 'カルピス',
-    greenTea: '緑茶',
-    chocolateCroffle: 'クロッフル(チョコ)',
-    mapleCroffle: 'クロッフル(メープル)',
-    greenTeaCroffle: 'クロッフル(抹茶)',
-    strawberryCroffle: 'クロッフル(いちご)',
-    plainCroffle: 'クロッフル(プレーン)'
+    appleJuice: 'りんごジュース',
+    grapeJuice: 'ぶどうジュース',
+    gingerAleBottle: 'ジンジャーエール（瓶）'
 };
 
 // 注文の取得

@@ -2,40 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { addOrder } from './api/orders';
 
 const productPrices = {
-    hotCoffee: 300,
     icedCoffee: 300,
+    hotCoffee: 300,
     cafeAuLait: 350,
-    hotTea: 300,
     icedTea: 300,
-    orangeJuice: 200,
-    appleJuice: 200,
+    hotTea: 300,
     calpis: 200,
-    greenTea: 200,
-    chocolateCroffle: 400,
-    mapleCroffle: 400,
-    greenTeaCroffle: 400,
-    strawberryCroffle: 400,
-    plainCroffle: 400
+    appleJuice: 200,
+    grapeJuice: 200,
+    gingerAleBottle: 300
 };
 
 const DISCOUNT_PER_COUPON = 300; // 1枚あたりの割引額
 
 const OrderInput: React.FC = () => {
     const [orders, setOrders] = useState({
-        hotCoffee: 0,
         icedCoffee: 0,
+        hotCoffee: 0,
         cafeAuLait: 0,
-        hotTea: 0,
         icedTea: 0,
-        orangeJuice: 0,
-        appleJuice: 0,
+        hotTea: 0,
         calpis: 0,
-        greenTea: 0,
-        chocolateCroffle: 0,
-        mapleCroffle: 0,
-        greenTeaCroffle: 0,
-        strawberryCroffle: 0,
-        plainCroffle: 0
+        appleJuice: 0,
+        grapeJuice: 0,
+        gingerAleBottle: 0
     });
     const [totalPrice, setTotalPrice] = useState(0);
     const [receivedAmount, setReceivedAmount] = useState<string>(""); // 初期値を空文字に変更
@@ -90,20 +80,15 @@ const OrderInput: React.FC = () => {
         }
 
         setOrders({
-            hotCoffee: 0,
             icedCoffee: 0,
+            hotCoffee: 0,
             cafeAuLait: 0,
-            hotTea: 0,
             icedTea: 0,
-            orangeJuice: 0,
-            appleJuice: 0,
+            hotTea: 0,
             calpis: 0,
-            greenTea: 0,
-            chocolateCroffle: 0,
-            mapleCroffle: 0,
-            greenTeaCroffle: 0,
-            strawberryCroffle: 0,
-            plainCroffle: 0
+            appleJuice: 0,
+            grapeJuice: 0,
+            gingerAleBottle: 0
         });
         setReceivedAmount("");
         setIsTakeout(false);
@@ -112,12 +97,14 @@ const OrderInput: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
+        <div className="mx-auto p-4 bg-white shadow-md rounded max-w-md md:max-w-full md:mx-0">
             <h2 className="text-3xl font-bold mb-4 text-center">注文画面</h2>
 
-            {/* コーヒーの注文 */}
-            <div className="mb-4">
-                <h3 className="text-lg font-semibold">Coffee</h3>
+            {/* メニュー（ジャンル別タイル） */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* コーヒーの注文 */}
+                <div className="mb-4 bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                    <h3 className="text-lg font-semibold">Coffee</h3>
                 <div className="flex justify-between items-center">
                     <span>ホットコーヒー (¥{productPrices.hotCoffee})</span>
                     <div className="flex items-center">
@@ -172,11 +159,11 @@ const OrderInput: React.FC = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+                </div>
 
-            {/* 紅茶の注文 */}
-            <div className="mb-4">
-                <h3 className="text-lg font-semibold">Tea</h3>
+                {/* 紅茶の注文 */}
+                <div className="mb-4 bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                    <h3 className="text-lg font-semibold">Tea</h3>
                 <div className="flex justify-between items-center">
                     <span>紅茶(ホット) (¥{productPrices.hotTea})</span>
                     <div className="flex items-center">
@@ -213,47 +200,11 @@ const OrderInput: React.FC = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+                </div>
 
-            {/* ソフトドリンクの注文 */}
-            <div className="mb-4">
-                <h3 className="text-lg font-semibold">SoftDrink</h3>
-                <div className="flex justify-between items-center">
-                    <span>オレンジジュース (¥{productPrices.orangeJuice})</span>
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => updateOrder('orangeJuice', orders.orangeJuice - 1)}
-                            className="bg-red-500 text-white px-3 py-1 rounded-l"
-                        >
-                            -
-                        </button>
-                        <span className="px-4">{orders.orangeJuice}</span>
-                        <button
-                            onClick={() => updateOrder('orangeJuice', orders.orangeJuice + 1)}
-                            className="bg-green-500 text-white px-3 py-1 rounded-r"
-                        >
-                            +
-                        </button>
-                    </div>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span>アップルジュース (¥{productPrices.appleJuice})</span>
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => updateOrder('appleJuice', orders.appleJuice - 1)}
-                            className="bg-red-500 text-white px-3 py-1 rounded-l"
-                        >
-                            -
-                        </button>
-                        <span className="px-4">{orders.appleJuice}</span>
-                        <button
-                            onClick={() => updateOrder('appleJuice', orders.appleJuice + 1)}
-                            className="bg-green-500 text-white px-3 py-1 rounded-r"
-                        >
-                            +
-                        </button>
-                    </div>
-                </div>
+                {/* ソフトドリンクの注文 */}
+                <div className="mb-4 bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                    <h3 className="text-lg font-semibold">SoftDrink</h3>
                 <div className="flex justify-between items-center">
                     <span>カルピス (¥{productPrices.calpis})</span>
                     <div className="flex items-center">
@@ -273,127 +224,73 @@ const OrderInput: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span>緑茶 (¥{productPrices.greenTea})</span>
+                    <span>りんごジュース (¥{productPrices.appleJuice})</span>
                     <div className="flex items-center">
                         <button
-                            onClick={() => updateOrder('greenTea', orders.greenTea - 1)}
+                            onClick={() => updateOrder('appleJuice', orders.appleJuice - 1)}
                             className="bg-red-500 text-white px-3 py-1 rounded-l"
                         >
                             -
                         </button>
-                        <span className="px-4">{orders.greenTea}</span>
+                        <span className="px-4">{orders.appleJuice}</span>
                         <button
-                            onClick={() => updateOrder('greenTea', orders.greenTea + 1)}
+                            onClick={() => updateOrder('appleJuice', orders.appleJuice + 1)}
                             className="bg-green-500 text-white px-3 py-1 rounded-r"
                         >
                             +
                         </button>
                     </div>
                 </div>
-            </div>
+                <div className="flex justify-between items-center">
+                    <span>ぶどうジュース (¥{productPrices.grapeJuice})</span>
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => updateOrder('grapeJuice', orders.grapeJuice - 1)}
+                            className="bg-red-500 text-white px-3 py-1 rounded-l"
+                        >
+                            -
+                        </button>
+                        <span className="px-4">{orders.grapeJuice}</span>
+                        <button
+                            onClick={() => updateOrder('grapeJuice', orders.grapeJuice + 1)}
+                            className="bg-green-500 text-white px-3 py-1 rounded-r"
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+                <div className="flex justify-between items-center">
+                    <span>ジンジャーエール（瓶） (¥{productPrices.gingerAleBottle})</span>
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => updateOrder('gingerAleBottle', orders.gingerAleBottle - 1)}
+                            className="bg-red-500 text-white px-3 py-1 rounded-l"
+                        >
+                            -
+                        </button>
+                        <span className="px-4">{orders.gingerAleBottle}</span>
+                        <button
+                            onClick={() => updateOrder('gingerAleBottle', orders.gingerAleBottle + 1)}
+                            className="bg-green-500 text-white px-3 py-1 rounded-r"
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+                </div>
 
-            {/* フードメニューの注文 */}
-            <div className="mb-4">
-                <h3 className="text-lg font-semibold">Food</h3>
-                <div className="flex justify-between items-center">
-                    <span>クロッフル(チョコ) (¥{productPrices.chocolateCroffle})</span>
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => updateOrder('chocolateCroffle', orders.chocolateCroffle - 1)}
-                            className="bg-red-500 text-white px-3 py-1 rounded-l"
-                        >
-                            -
-                        </button>
-                        <span className="px-4">{orders.chocolateCroffle}</span>
-                        <button
-                            onClick={() => updateOrder('chocolateCroffle', orders.chocolateCroffle + 1)}
-                            className="bg-green-500 text-white px-3 py-1 rounded-r"
-                        >
-                            +
-                        </button>
-                    </div>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span>クロッフル(メープル) (¥{productPrices.mapleCroffle})</span>
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => updateOrder('mapleCroffle', orders.mapleCroffle - 1)}
-                            className="bg-red-500 text-white px-3 py-1 rounded-l"
-                        >
-                            -
-                        </button>
-                        <span className="px-4">{orders.mapleCroffle}</span>
-                        <button
-                            onClick={() => updateOrder('mapleCroffle', orders.mapleCroffle + 1)}
-                            className="bg-green-500 text-white px-3 py-1 rounded-r"
-                        >
-                            +
-                        </button>
-                    </div>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span>クロッフル(抹茶) (¥{productPrices.greenTeaCroffle})</span>
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => updateOrder('greenTeaCroffle', orders.greenTeaCroffle - 1)}
-                            className="bg-red-500 text-white px-3 py-1 rounded-l"
-                        >
-                            -
-                        </button>
-                        <span className="px-4">{orders.greenTeaCroffle}</span>
-                        <button
-                            onClick={() => updateOrder('greenTeaCroffle', orders.greenTeaCroffle + 1)}
-                            className="bg-green-500 text-white px-3 py-1 rounded-r"
-                        >
-                            +
-                        </button>
-                    </div>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span>クロッフル(いちご) (¥{productPrices.strawberryCroffle})</span>
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => updateOrder('strawberryCroffle', orders.strawberryCroffle - 1)}
-                            className="bg-red-500 text-white px-3 py-1 rounded-l"
-                        >
-                            -
-                        </button>
-                        <span className="px-4">{orders.strawberryCroffle}</span>
-                        <button
-                            onClick={() => updateOrder('strawberryCroffle', orders.strawberryCroffle + 1)}
-                            className="bg-green-500 text-white px-3 py-1 rounded-r"
-                        >
-                            +
-                        </button>
-                    </div>
-                </div>
-                <div className="flex justify-between items-center">
-                    <span>クロッフル(プレーン) (¥{productPrices.plainCroffle})</span>
-                    <div className="flex items-center">
-                        <button
-                            onClick={() => updateOrder('plainCroffle', orders.plainCroffle - 1)}
-                            className="bg-red-500 text-white px-3 py-1 rounded-l"
-                        >
-                            -
-                        </button>
-                        <span className="px-4">{orders.plainCroffle}</span>
-                        <button
-                            onClick={() => updateOrder('plainCroffle', orders.plainCroffle + 1)}
-                            className="bg-green-500 text-white px-3 py-1 rounded-r"
-                        >
-                            +
-                        </button>
-                    </div>
-                </div>
+                {/* No Food items in the new menu */}
             </div>
 
             {/* テイクアウトのチェックボックス */}
-            <div className="mb-4">
-                <label className="text-lg font-semibold mr-2">テイクアウト</label>
+            <div className="mb-4 flex items-center">
+                <label className="text-2xl md:text-3xl font-bold mr-4">テイクアウト</label>
                 <input
                     type="checkbox"
                     checked={isTakeout}
                     onChange={(e) => setIsTakeout(e.target.checked)}
+                    className="w-8 h-8 md:w-10 md:h-10 accent-blue-600"
+                    aria-label="テイクアウト"
                 />
             </div>
 
@@ -419,7 +316,7 @@ const OrderInput: React.FC = () => {
             </div>
 
             {/* 合計金額の表示 */}
-            <div className="mt-6 text-xl font-bold text-center">
+            <div className="mt-6 text-3xl md:text-4xl font-extrabold text-center">
                 合計金額: ¥{totalPrice}
             </div>
 
@@ -436,7 +333,7 @@ const OrderInput: React.FC = () => {
             </div>
 
             {/* お釣りの表示 */}
-            <div className="mt-4 text-lg">
+            <div className="mt-4 text-2xl md:text-3xl font-semibold">
                 お釣り: ¥{change >= 0 ? change : 0}
             </div>
 
