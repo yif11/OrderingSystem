@@ -25,5 +25,6 @@ dist-ssr
 
 printReceipt.exe
 order_logs/*
+order_backups/
 print-preview/
 *.tsbuildinfo

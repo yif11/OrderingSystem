@@ -1,58 +1,21 @@
-const apiUrl = 'http://localhost:5000';  // サーバーのURL
-// const apiUrl = 'http://192.168.64.72:5000';
+import type { Order, OrderData, OrderPrintResult } from '../domain/orders';
 
-export const fetchOrders = async () => {
-    const response = await fetch(`${apiUrl}/orders`);
-    if (!response.ok) throw new Error('Failed to fetch orders');
-    return await response.json();
-};
+const apiUrl = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
-export const fetchServedOrders = async () => {
-    const response = await fetch(`${apiUrl}/served-orders`);
-    if (!response.ok) throw new Error('Failed to fetch served orders');
-    return await response.json();
-};
+async function request<Result>(endpoint: string, options?: RequestInit): Promise<Result> {
+    const response = await fetch(apiUrl + endpoint, options);
+    const result = response.headers.get('content-type')?.includes('application/json')
+        ? await response.json() : await response.text();
+    if (!response.ok) throw new Error(result.printing?.error || result.error || result || '注文APIとの通信に失敗しました。');
+    return result as Result;
+}
 
-type OrderData = {
-    items: { item: string; price: number; quantity?: number }[];
-    totalPrice: number;
-    receivedAmount: number;
-    change: number;
-    isTakeout: boolean;
-};
+const post = <Result>(endpoint: string, body?: unknown) => request<Result>(endpoint, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+});
 
-export type OrderPrintResult = {
-    order: OrderData & { id: number };
-    printing: { status: 'queued' | 'failed'; error?: string; jobId?: number };
-};
-
-export const addOrder = async (orderData: OrderData): Promise<OrderPrintResult> => {
-    const response = await fetch(`${apiUrl}/add-order`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || '注文を登録できませんでした。');
-    return result;
-};
-
-export const reprintOrder = async (orderId: number): Promise<OrderPrintResult> => {
-    const response = await fetch(`${apiUrl}/orders/${orderId}/print`, { method: 'POST' });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.printing?.error || result.error || '再印刷できませんでした。');
-    return result;
-};
-
-export const markItemAsServed = async (orderId: number, itemIndex: number) => {
-    const response = await fetch(`${apiUrl}/mark-served`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orderId, itemIndex }),
-    });
-    if (!response.ok) throw new Error('Failed to mark item as served');
-};
+export const fetchOrders = () => request<Order[]>('/orders');
+export const fetchServedOrders = () => request<Order[]>('/served-orders');
+export const addOrder = (order: OrderData) => post<OrderPrintResult>('/add-order', order);
+export const reprintOrder = (orderId: number) => post<OrderPrintResult>(`/orders/${orderId}/print`);
+export const markItemAsServed = (orderId: number, itemIndex: number) => post<string>('/mark-served', { orderId, itemIndex });
