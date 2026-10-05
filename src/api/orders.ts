@@ -13,7 +13,20 @@ export const fetchServedOrders = async () => {
     return await response.json();
 };
 
-export const addOrder = async (orderData: { items: { item: string }[], totalPrice: number, receivedAmount: number, change: number }) => {
+type OrderData = {
+    items: { item: string; price: number; quantity?: number }[];
+    totalPrice: number;
+    receivedAmount: number;
+    change: number;
+    isTakeout: boolean;
+};
+
+export type OrderPrintResult = {
+    order: OrderData & { id: number };
+    printing: { status: 'queued' | 'failed'; error?: string; jobId?: number };
+};
+
+export const addOrder = async (orderData: OrderData): Promise<OrderPrintResult> => {
     const response = await fetch(`${apiUrl}/add-order`, {
         method: 'POST',
         headers: {
@@ -21,7 +34,16 @@ export const addOrder = async (orderData: { items: { item: string }[], totalPric
         },
         body: JSON.stringify(orderData),
     });
-    if (!response.ok) throw new Error('Failed to add order');
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || '注文を登録できませんでした。');
+    return result;
+};
+
+export const reprintOrder = async (orderId: number): Promise<OrderPrintResult> => {
+    const response = await fetch(`${apiUrl}/orders/${orderId}/print`, { method: 'POST' });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.printing?.error || result.error || '再印刷できませんでした。');
+    return result;
 };
 
 export const markItemAsServed = async (orderId: number, itemIndex: number) => {

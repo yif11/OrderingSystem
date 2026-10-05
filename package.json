@@ -4,6 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "server": "node server.cjs",
+    "test": "node --test tests/orders.test.cjs tests/printing.test.cjs",
+    "print:preview": "node scripts/print-sample.cjs --preview",
+    "print:test": "node scripts/print-sample.cjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
@@ -13,6 +17,7 @@
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "express": "^4.21.0",
+    "koffi": "^3.3.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2",
@@ -21,6 +26,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/uuid": "^10.0.0",
@@ -31,7 +37,7 @@
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
     "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.13",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"

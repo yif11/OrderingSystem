@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { addOrder } from '../api/orders';
+import { addOrder, reprintOrder } from '../api/orders';
 
 const productPrices = {
     hotCoffee: 300,
@@ -41,6 +41,9 @@ const OrderInput: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [isTakeout, setIsTakeout] = useState(false);
     const [couponCount, setDiscountCoupons] = useState(0); // 割引券の数
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+    const [failedPrintOrder, setFailedPrintOrder] = useState<number | null>(null);
 
     const totalPrice = (() => {
         const newTotalPrice = Object.entries(orders).reduce(
@@ -63,55 +66,109 @@ const OrderInput: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        setLoading(true);
-
-        // 選択された商品を個別に分割して、単品ごとの注文として追加
-        const orderItems = Object.entries(orders)
-            .flatMap(([item, quantity]) =>
-                Array.from({ length: quantity }).map(() => ({
-                    item,
-                    served: false,
-                    price: productPrices[item as keyof typeof orders]
-                }))
-            );
-
-        const orderData = {
-            items: orderItems,
-            totalPrice,
-            receivedAmount: Number(receivedAmount),
-            change,
-            isTakeout
-        };
-
-        if (orderItems.length > 0) {
-            await addOrder(orderData);
+        if (loading) return;
+        if (failedPrintOrder !== null) {
+            setError('前の注文の再印刷を完了するか、番号を控えてから次の注文に進んでください。');
+            return;
         }
+        if (!Object.values(orders).some(quantity => quantity > 0)) {
+            setError('商品を選択してください。');
+            return;
+        }
+        if (!Number.isSafeInteger(Number(receivedAmount)) || change < 0) {
+            setError('お預かり金額を確認してください。');
+            return;
+        }
+        setLoading(true);
+        setError('');
+        setMessage('');
 
-        setOrders({
-            hotCoffee: 0,
-            icedCoffee: 0,
-            cafeAuLait: 0,
-            hotTea: 0,
-            icedTea: 0,
-            orangeJuice: 0,
-            appleJuice: 0,
-            calpis: 0,
-            greenTea: 0,
-            chocolateCroffle: 0,
-            mapleCroffle: 0,
-            greenTeaCroffle: 0,
-            strawberryCroffle: 0,
-            plainCroffle: 0
-        });
-        setReceivedAmount("");
-        setIsTakeout(false);
-        setLoading(false);
-        setDiscountCoupons(0);
+        try {
+            // 選択された商品を個別に分割して、単品ごとの注文として追加
+            const orderItems = Object.entries(orders)
+                .flatMap(([item, quantity]) =>
+                    Array.from({ length: quantity }).map(() => ({
+                        item,
+                        served: false,
+                        price: productPrices[item as keyof typeof orders]
+                    }))
+                );
+
+            const orderData = {
+                items: orderItems,
+                totalPrice,
+                receivedAmount: Number(receivedAmount),
+                change,
+                isTakeout
+            };
+
+            const result = await addOrder(orderData);
+            const number = `${result.order.isTakeout ? 'T' : ''}${result.order.id}`;
+            if (result.printing.status === 'failed') {
+                setFailedPrintOrder(result.order.id);
+                setMessage(`注文番号 ${number} を登録しました。`);
+                setError(`印刷できませんでした。プリンタを確認して再印刷してください。${result.printing.error || ''}`);
+            } else {
+                setMessage(`注文番号 ${number} を登録し、レシートと番号票を印刷キューに送信しました。`);
+            }
+
+            setOrders({
+                hotCoffee: 0,
+                icedCoffee: 0,
+                cafeAuLait: 0,
+                hotTea: 0,
+                icedTea: 0,
+                orangeJuice: 0,
+                appleJuice: 0,
+                calpis: 0,
+                greenTea: 0,
+                chocolateCroffle: 0,
+                mapleCroffle: 0,
+                greenTeaCroffle: 0,
+                strawberryCroffle: 0,
+                plainCroffle: 0
+            });
+            setReceivedAmount("");
+            setIsTakeout(false);
+            setDiscountCoupons(0);
+        } catch (error) {
+            setError(error instanceof Error ? error.message : '注文を登録できませんでした。');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleReprint = async () => {
+        if (loading || failedPrintOrder === null) return;
+        setLoading(true);
+        setError('');
+        try {
+            const result = await reprintOrder(failedPrintOrder);
+            const number = `${result.order.isTakeout ? 'T' : ''}${result.order.id}`;
+            setFailedPrintOrder(null);
+            setMessage(`注文番号 ${number} のレシートと番号票を印刷キューに送信しました。`);
+        } catch (error) {
+            setError(error instanceof Error ? error.message : '再印刷できませんでした。');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
             <h2 className="text-3xl font-bold mb-4 text-center">注文画面</h2>
+            {message && <p role="status" className="mb-4 text-green-700">{message}</p>}
+            {error && <p role="alert" className="mb-4 text-red-700">{error}</p>}
+            {failedPrintOrder !== null && (
+                <div className="mb-4 flex gap-2">
+                    <button onClick={handleReprint} disabled={loading} className="bg-blue-500 text-white px-4 py-2 rounded">
+                        登録済みの注文を再印刷
+                    </button>
+                    <button onClick={() => { setFailedPrintOrder(null); setError(''); }} disabled={loading} className="border px-4 py-2 rounded">
+                        番号を控えて次の注文へ
+                    </button>
+                </div>
+            )}
 
             {/* コーヒーの注文 */}
             <div className="mb-4">
