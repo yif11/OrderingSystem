@@ -1,8 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { addOrder, reprintOrder } from '../api/orders';
 import { itemMapJa } from '../api/itemMap';
 import { buildOrderItems, calculateTotal, DISCOUNT_PER_COUPON, emptyQuantities, menuGroups, orderNumber, productPrices, type ProductId } from '../domain/orders';
 import QuantityControl from './QuantityControl';
+import Icon from './Icon';
+
+const categoryLabels: Record<string, { title: string; icon: 'coffee' | 'leaf' | 'croffle'; tone: string }> = {
+    Coffee: { title: 'コーヒー', icon: 'coffee', tone: 'coffee' },
+    Tea: { title: 'お茶・ソフトドリンク', icon: 'leaf', tone: 'tea' },
+    Food: { title: 'クロッフル', icon: 'croffle', tone: 'food' },
+};
+
+const yen = (amount: number) => `¥${amount.toLocaleString('ja-JP')}`;
 
 export default function OrderInput() {
     const [orders, setOrders] = useState(emptyQuantities);
@@ -13,8 +22,19 @@ export default function OrderInput() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [failedPrintOrder, setFailedPrintOrder] = useState<number | null>(null);
+    const [checkoutVisible, setCheckoutVisible] = useState(false);
+    const checkoutRef = useRef<HTMLElement>(null);
     const totalPrice = calculateTotal(orders, couponCount);
+    const subtotal = calculateTotal(orders, 0);
+    const selectedItems = (Object.keys(productPrices) as ProductId[]).filter(item => orders[item] > 0);
+    const itemCount = selectedItems.reduce((count, item) => count + orders[item], 0);
     const change = (Number(receivedAmount) || 0) - totalPrice;
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => setCheckoutVisible(entry.isIntersecting), { rootMargin: '-128px 0px -64px 0px' });
+        if (checkoutRef.current) observer.observe(checkoutRef.current);
+        return () => observer.disconnect();
+    }, []);
 
     const updateOrder = (item: ProductId, quantity: number) => setOrders(previous => ({ ...previous, [item]: quantity }));
 
@@ -69,48 +89,78 @@ export default function OrderInput() {
     };
 
     return (
-        <div className="container mx-auto p-4 bg-white shadow-md rounded max-w-md lg:max-w-lg">
-            <h2 className="text-3xl font-bold mb-4 text-center">注文画面</h2>
-            {message && <p role="status" className="mb-4 text-green-700">{message}</p>}
-            {error && <p role="alert" className="mb-4 text-red-700">{error}</p>}
+        <div className="order-page">
+            <div className="page-heading">
+                <h1>注文受付</h1>
+            </div>
+            {message && <div role="status" className="notice notice-success"><Icon name="check" /><p>{message}</p></div>}
+            {error && <div role="alert" className="notice notice-error"><Icon name="alert" /><p>{error}</p></div>}
             {failedPrintOrder !== null && (
-                <div className="mb-4 flex gap-2">
-                    <button onClick={handleReprint} disabled={loading} className="bg-blue-500 text-white px-4 py-2 rounded">登録済みの注文を再印刷</button>
-                    <button onClick={() => { setFailedPrintOrder(null); setError(''); }} disabled={loading} className="border px-4 py-2 rounded">番号を控えて次の注文へ</button>
+                <div className="reprint-actions">
+                    <button onClick={handleReprint} disabled={loading} className="button button-primary">登録済みの注文を再印刷</button>
+                    <button onClick={() => { setFailedPrintOrder(null); setError(''); }} disabled={loading} className="button button-secondary">番号を控えて次の注文へ</button>
                 </div>
             )}
-            <fieldset disabled={loading}>
-                {menuGroups.map(group => (
-                    <div key={group.title} className="mb-4">
-                        <h3 className="text-lg font-semibold">{group.title}</h3>
-                        {group.items.map(item => (
-                            <div key={item} className="flex justify-between items-center">
-                                <span>{itemMapJa[item]} (¥{productPrices[item]})</span>
-                                <QuantityControl label={itemMapJa[item]} value={orders[item]} onChange={quantity => updateOrder(item, quantity)} />
-                            </div>
-                        ))}
+            <form onSubmit={event => { event.preventDefault(); void handleSubmit(); }}>
+                <fieldset disabled={loading} className="order-layout">
+                    <legend className="sr-only">注文商品とお会計</legend>
+                    <div className="menu-area">
+                        <div className="section-heading"><h2>メニュー</h2></div>
+                        <div className="menu-sections">
+                            {menuGroups.map(group => {
+                                const category = categoryLabels[group.title];
+                                return (
+                                    <section key={group.title} className={`menu-section category-${category.tone}`} aria-label={category.title}>
+                                        <div className="category-heading">
+                                            <span className="category-icon"><Icon name={category.icon} /></span>
+                                            <h3>{category.title}</h3>
+                                        </div>
+                                        <div className="product-list">
+                                            {group.items.map(item => (
+                                                <div key={item} className={`product-row${orders[item] > 0 ? ' is-selected' : ''}`}>
+                                                    <div className="product-info"><span className="product-name">{itemMapJa[item]}</span><span className="product-price">{yen(productPrices[item])}</span></div>
+                                                    <QuantityControl label={itemMapJa[item]} value={orders[item]} onChange={quantity => updateOrder(item, quantity)} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+                                );
+                            })}
+                        </div>
                     </div>
-                ))}
-                <div className="mb-4">
-                    <label className="text-lg font-semibold mr-2" htmlFor="takeout">テイクアウト</label>
-                    <input id="takeout" type="checkbox" checked={isTakeout} onChange={event => setIsTakeout(event.target.checked)} />
-                </div>
-                <div className="mb-4">
-                    <h3 className="text-lg font-semibold">どりーむきっず用割引券</h3>
-                    <QuantityControl label="割引券" value={couponCount} onChange={setCouponCount} />
-                    <p className="text-gray-600">1枚につき¥{DISCOUNT_PER_COUPON}の割引</p>
-                </div>
-                <div className="mt-6 text-xl font-bold text-center">合計金額: ¥{totalPrice}</div>
-                <div className="mt-4">
-                    <label className="block text-lg font-medium mb-2" htmlFor="receivedAmount">お預かり金額</label>
-                    <input id="receivedAmount" type="number" value={receivedAmount} onChange={event => setReceivedAmount(event.target.value)}
-                        className="w-full p-2 border rounded" placeholder="お預かり金額を入力してください" />
-                </div>
-                <div className="mt-4 text-lg">お釣り: ¥{Math.max(0, change)}</div>
-                <button onClick={handleSubmit} className="mt-6 bg-blue-500 text-white px-4 py-2 rounded w-full">
-                    {loading ? 'Processing...' : '注文を送信'}
-                </button>
-            </fieldset>
+                    <section ref={checkoutRef} id="checkout" className="checkout-panel" aria-labelledby="checkout-heading">
+                        <div className="checkout-heading"><div><Icon name="receipt" /><h2 id="checkout-heading">お会計</h2></div><span className="count-pill">{itemCount} 点</span></div>
+                        <fieldset className="fulfillment-fieldset">
+                            <legend className="field-label">お渡し方法</legend>
+                            <div className="fulfillment-control">
+                                <label><input type="radio" name="fulfillment" checked={!isTakeout} onChange={() => setIsTakeout(false)} /><span><Icon name="coffee" />店内</span></label>
+                                <label><input id="takeout" type="radio" name="fulfillment" checked={isTakeout} onChange={() => setIsTakeout(true)} /><span><Icon name="bag" />テイクアウト</span></label>
+                            </div>
+                        </fieldset>
+                        <div className="cart-summary">
+                            {itemCount === 0 ? <div className="cart-empty"><Icon name="coffee" /><p>メニューから商品を選択</p></div> : (
+                                <ul className="cart-items">{selectedItems.map(item => <li key={item}><span>{itemMapJa[item]}<small>× {orders[item]}</small></span><strong>{yen(productPrices[item] * orders[item])}</strong></li>)}</ul>
+                            )}
+                        </div>
+                        <div className="coupon-row"><div><h3>どりーむきっず用割引券</h3><p>1枚につき {yen(DISCOUNT_PER_COUPON)} 引き</p></div><QuantityControl label="割引券" value={couponCount} onChange={setCouponCount} /></div>
+                        <div className="price-breakdown"><div><span>小計</span><span>{yen(subtotal)}</span></div>{couponCount > 0 && <div className="discount-line"><span>割引（{couponCount}枚）</span><span>−{yen(subtotal - totalPrice)}</span></div>}</div>
+                        <div className="total-row"><span>合計金額</span><strong><small>¥</small>{totalPrice.toLocaleString('ja-JP')}</strong></div>
+                        <div className="payment-area">
+                            <label className="field-label" htmlFor="receivedAmount">お預かり金額</label>
+                            <div className="currency-input"><span>¥</span><input id="receivedAmount" type="number" min="0" step="1" inputMode="numeric" value={receivedAmount} onChange={event => setReceivedAmount(event.target.value)} placeholder="0" aria-describedby={receivedAmount !== '' && change < 0 ? 'payment-hint' : undefined} /></div>
+                            <div className="cash-shortcuts">
+                                <button type="button" onClick={() => setReceivedAmount(String(totalPrice))}>ちょうど</button>
+                                {[1000, 5000].map(amount => <button key={amount} type="button" disabled={totalPrice > amount} onClick={() => setReceivedAmount(String(amount))}>{yen(amount)}</button>)}
+                            </div>
+                            {receivedAmount !== '' && change < 0 && <p id="payment-hint" className="payment-hint is-insufficient">あと {yen(-change)} 不足しています</p>}
+                            <div className="change-row"><span>お釣り</span><strong>{yen(Math.max(0, change))}</strong></div>
+                        </div>
+                        <button type="submit" className="button button-primary submit-order">{loading ? '注文を処理しています…' : '注文を送信'}<Icon name="arrow" /></button>
+                        <p className="checkout-footnote">レシート・番号票を印刷します</p>
+                    </section>
+                </fieldset>
+            </form>
+            {itemCount > 0 && !checkoutVisible && <button type="button" className="mobile-checkout-button" aria-controls="checkout" onClick={() => checkoutRef.current?.scrollIntoView({ block: 'start' })}><span><strong>{itemCount} 点</strong><span>{yen(totalPrice)}</span></span><span>お会計へ<Icon name="arrow" /></span></button>}
         </div>
     );
 }

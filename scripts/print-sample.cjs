@@ -1,7 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const receiptline = require('receiptline');
-const { buildDocuments, buildPrintData, createOrderPrinter } = require('../printing/order-printer.cjs');
+const { buildDocuments, buildPrintData, renderPreview, createOrderPrinter } = require('../printing/order-printer.cjs');
 
 // This sample never registers an order or changes the order counter.
 const sample = {
@@ -19,13 +18,10 @@ async function main() {
         const directory = path.join(__dirname, '..', 'print-preview');
         fs.mkdirSync(directory, { recursive: true });
         const { receipt, ticket } = buildDocuments(sample);
-        for (const [name, document] of Object.entries({ receipt, ticket })) {
-            fs.writeFileSync(path.join(directory, `${name}.svg`), receiptline.transform(document, {
-                command: 'svg', cpl: 32, encoding: 'shiftjis', spacing: true
-            }));
-            fs.writeFileSync(path.join(directory, `${name}.txt`), receiptline.transform(document, {
-                command: 'text', cpl: 32, encoding: 'shiftjis'
-            }));
+        const { ticket: dineInTicket } = buildDocuments({ ...sample, isTakeout: false });
+        for (const [name, document] of Object.entries({ receipt, ticket, 'ticket-eat-in': dineInTicket })) {
+            fs.writeFileSync(path.join(directory, `${name}.svg`), renderPreview(document));
+            fs.writeFileSync(path.join(directory, `${name}.txt`), renderPreview(document, 'text'));
         }
         fs.writeFileSync(path.join(directory, 'test-receipt.prn'), buildPrintData(sample));
         console.log(`プレビューを保存しました: ${directory}`);

@@ -2,7 +2,12 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const receiptline = require('receiptline');
 const iconv = require('iconv-lite');
-const { buildDocuments, buildPrintData, createOrderPrinter } = require('../printing/order-printer.cjs');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { PNG } = require('pngjs');
+const { buildDocuments, buildPrintData, renderPreview, createOrderPrinter } = require('../printing/order-printer.cjs');
+const { prepareReceiptImage, loadReceiptImages } = require('../printing/receipt-images.cjs');
 const { writeRaw, submitRaw } = require('../printing/windows-printer.cjs');
 
 const sample = {
@@ -24,6 +29,8 @@ test('receipt groups single items, prints Japanese names, discount and payment',
     assert.match(text, /お釣り\s+￥300/);
     assert.match(text, /注文番号 T123/);
     assert.match(renderText(ticket), /テイクアウト/);
+    assert.match(renderText(ticket), /この番号票をお持ちください/);
+    assert.doesNotMatch(renderText(ticket), /クリップ/);
 
     const data = buildPrintData(sample);
     const cuts = data.toString('latin1').split('\x1dVB\x00');
@@ -44,7 +51,128 @@ test('supports explicit quantities, free orders and long eat-in order numbers', 
     assert.match(renderText(receipt), /合計\s+￥0/);
     assert.match(renderText(ticket), /9007199254740991/);
     assert.match(renderText(ticket), /店内/);
+    assert.ok(renderText(ticket).replace(/\s/g, '').includes('注文番号をクリップにはさんでおいてください'));
     assert.ok(buildPrintData(order).includes(Buffer.from('9007199254740991')));
+});
+
+test('receipt prints monochrome logo first and QR after thank-you, within 58 mm paper', () => {
+    const { receipt } = buildDocuments(sample);
+    const lines = receipt.split('\n');
+    assert.match(lines[1], /^\{image:/);
+    assert.doesNotMatch(receipt, / レシート /);
+    const images = [...receipt.matchAll(/\{image:([^}]+)\}/g)].map(match => PNG.sync.read(Buffer.from(match[1], 'base64')));
+    assert.equal(images.length, 2);
+    assert.ok(images[0].width <= 384);
+    assert.ok(images[0].height < images[0].width, 'transparent logo margins are removed');
+    assert.equal(images[1].width, 384);
+    const qrSource = PNG.sync.read(fs.readFileSync(path.join(__dirname, '..', 'public', 'qr.png')));
+    assert.ok(Math.abs(images[1].height / images[1].width - qrSource.height / qrSource.width) < 1 / images[1].width, 'QR aspect ratio is preserved');
+    assert.equal(images[1].data[0], 255, 'QR quiet border stays white');
+    for (const image of images) {
+        let black = 0, white = 0;
+        for (let pixel = 0; pixel < image.data.length; pixel += 4) {
+            const gray = image.data[pixel];
+            assert.ok(gray === 0 || gray === 255);
+            assert.equal(image.data[pixel + 1], gray);
+            assert.equal(image.data[pixel + 2], gray);
+            assert.equal(image.data[pixel + 3], 255);
+            if (gray === 0) black++; else white++;
+        }
+        assert.ok(black > 0 && white > 0, 'both image content and white paper survive');
+    }
+
+    const data = buildPrintData(sample);
+    const raster = Buffer.from('\x1dv0', 'latin1');
+    const frames = [];
+    for (let cursor = 0; cursor < data.length;) {
+        const start = data.indexOf(raster, cursor);
+        if (start === -1) break;
+        const widthBytes = data.readUInt16LE(start + 4), height = data.readUInt16LE(start + 6);
+        const end = start + 8 + widthBytes * height;
+        assert.ok(end <= data.length);
+        frames.push({ start, end, widthBytes, height });
+        cursor = end;
+    }
+    assert.equal(frames.length, 2);
+    const thankYou = data.indexOf(iconv.encode('ありがとうございました', 'shiftjis'));
+    assert.ok(thankYou > frames[0].end && thankYou < frames[1].start);
+    assert.ok(frames[1].end < data.indexOf(Buffer.from('\x1dVB\x00', 'latin1')), 'QR precedes the receipt cut');
+    for (let index = 0; index < images.length; index++) {
+        const image = images[index], frame = frames[index];
+        assert.equal(frame.widthBytes, Math.ceil(image.width / 8));
+        assert.equal(frame.height, image.height);
+        for (let y = 0; y < image.height; y++) {
+            for (let x = 0; x < image.width; x++) {
+                const printed = data[frame.start + 8 + y * frame.widthBytes + (x >> 3)] & (128 >> (x & 7));
+                assert.equal(Boolean(printed), image.data[(y * image.width + x) * 4] === 0);
+            }
+        }
+    }
+});
+
+test('receipt image scaling retains lighter QR dots and flattens transparency onto white', () => {
+    const source = new PNG({ width: 4, height: 2 });
+    for (let y = 0; y < 2; y++) {
+        for (let x = 0; x < 4; x++) {
+            source.data.set(x < 2 ? [247, 120, 60, 255] : [0, 0, 0, 0], (y * 4 + x) * 4);
+        }
+    }
+    const image = PNG.sync.read(prepareReceiptImage(PNG.sync.write(source), { maxWidth: 2 }));
+    assert.equal(image.width, 2);
+    assert.equal(image.height, 1);
+    assert.deepEqual([...image.data], [0, 0, 0, 255, 255, 255, 255, 255]);
+});
+
+test('receipt and ticket center their 32-column content within the NEC 35-column area', () => {
+    const data = buildPrintData(sample);
+    const raster = Buffer.from('\x1dv0', 'latin1');
+    let areas = 0;
+    for (let offset = 0; offset < data.length;) {
+        if (data.subarray(offset, offset + 3).equals(raster)) {
+            const widthBytes = data.readUInt16LE(offset + 4), height = data.readUInt16LE(offset + 6);
+            offset += 8 + widthBytes * height;
+        } else if (data[offset] === 0x1d && data[offset + 1] === 0x4c) {
+            const left = data.readUInt16LE(offset + 2);
+            assert.equal(left, 18, '18-dot left margin applies to every row and image');
+            assert.ok(data.subarray(offset + 4, offset + 6).equals(Buffer.from('\x1dW', 'latin1')));
+            const width = data.readUInt16LE(offset + 6);
+            assert.equal(width, 384);
+            assert.equal(420 - left - width, left, 'left and right margins are equal');
+            areas++;
+            offset += 8;
+        } else offset++;
+    }
+    assert.ok(areas > 10);
+
+    const { receipt, ticket } = buildDocuments(sample);
+    for (const document of [receipt, ticket]) {
+        const svg = renderPreview(document);
+        assert.match(svg, /^<svg width="420px"/);
+        assert.match(svg, /viewBox="0 0 420 \d+"/);
+    }
+    const svg = renderPreview(receipt);
+    const imagePlacements = [...svg.matchAll(/<g transform="translate\(([\d.]+),[\d.]+\)"><image[^>]+width="(\d+)"/g)];
+    assert.equal(imagePlacements.length, 2);
+    for (const [, x, width] of imagePlacements) assert.equal(Number(x) + Number(width) / 2, 210, 'both image centers match the paper center');
+});
+
+test('receipt assets reload after replacement and missing or corrupt PNGs report their filename', t => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ordering-receipt-images-'));
+    t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+    const source = new PNG({ width: 2, height: 2 });
+    source.data.fill(255);
+    const png = PNG.sync.write(source);
+    fs.writeFileSync(path.join(directory, 'logo.png'), png);
+    fs.writeFileSync(path.join(directory, 'qr.png'), png);
+    const first = loadReceiptImages(directory);
+    assert.deepEqual(loadReceiptImages(directory), first);
+    fs.writeFileSync(path.join(directory, 'qr.png'), PNG.sync.write(new PNG({ width: 3, height: 2 })));
+    assert.notEqual(loadReceiptImages(directory).qr, first.qr);
+    fs.writeFileSync(path.join(directory, 'logo.png'), 'invalid');
+    assert.throws(() => loadReceiptImages(directory), /レシート画像 logo\.png を読み込めませんでした/);
+    fs.writeFileSync(path.join(directory, 'logo.png'), png);
+    fs.unlinkSync(path.join(directory, 'qr.png'));
+    assert.throws(() => loadReceiptImages(directory), /レシート画像 qr\.png を読み込めませんでした/);
 });
 
 test('product text cannot inject ReceiptLine markup or printer commands', () => {
