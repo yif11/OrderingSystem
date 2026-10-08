@@ -1,4 +1,6 @@
 const { OrderError } = require('./errors.cjs');
+const productPrices = require('../shared/product-prices.json');
+const { voucherDenominations, cashDue, validateVouchers } = require('./vouchers.cjs');
 
 const isMoney = value => Number.isSafeInteger(value) && value >= 0;
 
@@ -18,12 +20,16 @@ function validateOrderInput(body) {
         throw new OrderError('商品を選択してください。');
     }
     validateItems(body.items);
+    if (body.items.some(item => !Object.hasOwn(productPrices, item.item) || item.price !== productPrices[item.item])) {
+        throw new OrderError('メニューの商品・価格を確認してください。');
+    }
+    validateVouchers(body.vouchers);
     if (![body.totalPrice, body.receivedAmount, body.change].every(isMoney) ||
-        body.receivedAmount - body.totalPrice !== body.change) {
+        body.receivedAmount - cashDue(body.totalPrice, body.vouchers) !== body.change) {
         throw new OrderError('合計・お預かり・お釣りの金額を確認してください。');
     }
     const subtotal = body.items.reduce((total, item) => total + item.price * (item.quantity ?? 1), 0);
-    if (!Number.isSafeInteger(subtotal) || body.totalPrice > subtotal ||
+    if (!Number.isSafeInteger(subtotal) || body.totalPrice !== subtotal ||
         (body.isTakeout !== undefined && typeof body.isTakeout !== 'boolean')) {
         throw new OrderError('注文内容が正しくありません。');
     }
@@ -35,6 +41,7 @@ function createOrder(body, id) {
         id,
         items: body.items.map(item => ({ item: item.item, quantity: item.quantity ?? 1, price: item.price, served: false })),
         totalPrice: body.totalPrice, receivedAmount: body.receivedAmount, change: body.change,
+        vouchers: Object.fromEntries(voucherDenominations.map(amount => [amount, body.vouchers?.[amount] ?? 0])),
         isTakeout: body.isTakeout ?? false, createdAt: new Date().toISOString()
     };
 }
@@ -55,6 +62,12 @@ function validateState(state) {
         if (![order.totalPrice, order.receivedAmount].every(isMoney) || !Number.isSafeInteger(order.change) ||
             (order.isTakeout !== undefined && typeof order.isTakeout !== 'boolean')) {
             throw new OrderError('保存された注文の金額・持ち帰り区分が正しくありません。');
+        }
+        if (order.vouchers !== undefined) {
+            validateVouchers(order.vouchers);
+            if (!isMoney(order.change) || order.receivedAmount - cashDue(order.totalPrice, order.vouchers) !== order.change) {
+                throw new OrderError('保存された注文の商品券・現金・お釣りが正しくありません。');
+            }
         }
     }
     return state;

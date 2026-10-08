@@ -17,7 +17,7 @@ const sample = {
 };
 const renderText = doc => receiptline.transform(doc, { command: 'text', cpl: 32, encoding: 'shiftjis' });
 
-test('receipt groups single items, prints Japanese names, discount and payment', () => {
+test('legacy receipts retain their Japanese names, original discount and payment', () => {
     const { receipt, ticket } = buildDocuments(sample);
     const text = renderText(receipt);
     assert.equal(text.match(/ホットコーヒー/g).length, 1);
@@ -40,6 +40,35 @@ test('receipt groups single items, prints Japanese names, discount and payment',
     assert.ok(cuts[1].includes('\x1d!\x22'), 'number ticket uses triple size');
     assert.ok(data.subarray(0, 5).equals(Buffer.from('\x1b@\x1b=\x01', 'latin1')));
     assert.ok(data.subarray(-7).equals(Buffer.from('\n\n\n\x1dVB\x00', 'latin1')));
+});
+
+test('voucher receipts show denominations, the full sale and only the remaining cash payment', () => {
+    const order = { ...sample,
+        items: [{ item: 'appleJuice', price: 200 }, { item: 'grapeJuice', price: 200 }, { item: 'gingerAle', price: 300 }],
+        totalPrice: 700, vouchers: { 50: 1, 100: 1, 200: 1 }, receivedAmount: 500, change: 150
+    };
+    const text = renderText(buildDocuments(order).receipt);
+    assert.match(text, /りんごジュース/);
+    assert.match(text, /ぶどうジュース/);
+    assert.match(text, /ジンジャーエール/);
+    assert.match(text, /合計\s+￥700/);
+    assert.match(text, /商品券 ￥50 × 1枚\s+￥50/);
+    assert.match(text, /商品券 ￥100 × 1枚\s+￥100/);
+    assert.match(text, /商品券 ￥200 × 1枚\s+￥200/);
+    assert.match(text, /商品券合計\s+￥350/);
+    assert.match(text, /現金でのお支払い\s+￥350/);
+    assert.match(text, /お預かり（現金）\s+￥500/);
+    assert.match(text, /お釣り\s+￥150/);
+    assert.doesNotMatch(text, /割引|釣銭なし/);
+
+    const covered = { ...order, vouchers: { 1000: 1 }, receivedAmount: 0, change: 0 };
+    const coveredText = renderText(buildDocuments(covered).receipt).replace(/\s/g, '');
+    assert.ok(coveredText.includes('商品券合計￥1,000'));
+    assert.ok(coveredText.includes('商品券超過分￥300'));
+    assert.ok(coveredText.includes('商品券分の釣銭なし'));
+    assert.ok(coveredText.includes('現金でのお支払い￥0'));
+    assert.ok(coveredText.includes('お釣り￥0'));
+    assert.equal(buildPrintData(covered).toString('latin1').split('\x1dVB\x00').length, 3);
 });
 
 test('supports explicit quantities, free orders and long eat-in order numbers', () => {

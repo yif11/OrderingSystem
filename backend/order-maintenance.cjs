@@ -5,6 +5,7 @@ const { emptyState, readJson } = require('./order-store.cjs');
 const { validateState } = require('./order-domain.cjs');
 const { OrderError } = require('./errors.cjs');
 const itemNames = require('../shared/item-names.json');
+const { voucherDenominations, voucherAmount, cashDue } = require('./vouchers.cjs');
 
 const checksum = data => createHash('sha256').update(JSON.stringify(data)).digest('hex');
 
@@ -91,7 +92,8 @@ function createOrderMaintenance({ store, backupDir = process.env.ORDER_BACKUP_DI
                 if (/^\s*[=+@-]/.test(text) && typeof value === 'string') text = `'${text}`;
                 return `"${text.replace(/"/g, '""')}"`;
             };
-            const rows = [['注文番号', '提供状態', '店内・持ち帰り', '注文時刻', '商品コード', '商品名', '数量', '単価', '商品金額', '注文合計', 'お預かり', 'お釣り']];
+            const rows = [['注文番号', '提供状態', '店内・持ち帰り', '注文時刻', '商品コード', '商品名', '数量', '単価', '商品金額', '注文合計', 'お預かり', 'お釣り',
+                '商品券額面合計', '商品券充当額', '現金支払額', ...voucherDenominations.map(amount => `${amount}円商品券枚数`)]];
             for (const [status, orders] of [['未提供', state.orders], ['提供済み', state.servedOrders]]) {
                 for (const order of orders) {
                     for (const item of order.items) {
@@ -99,7 +101,9 @@ function createOrderMaintenance({ store, backupDir = process.env.ORDER_BACKUP_DI
                             `${order.isTakeout ? 'T' : ''}${order.id}`, item.served ? '提供済み' : status,
                             order.isTakeout ? 'テイクアウト' : '店内', order.createdAt || '', item.item,
                             itemNames[item.item] || item.item, item.quantity ?? 1, item.price,
-                            item.price * (item.quantity ?? 1), order.totalPrice, order.receivedAmount, order.change
+                            item.price * (item.quantity ?? 1), order.totalPrice, order.receivedAmount, order.change,
+                            voucherAmount(order.vouchers), Math.min(order.totalPrice, voucherAmount(order.vouchers)), cashDue(order.totalPrice, order.vouchers),
+                            ...voucherDenominations.map(amount => order.vouchers?.[amount] ?? 0)
                         ]);
                     }
                 }

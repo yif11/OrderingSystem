@@ -1,16 +1,9 @@
 {
-  "hotCoffee": 300,
-  "icedCoffee": 300,
-  "cafeAuLait": 350,
-  "hotTea": 300,
-  "icedTea": 300,
-  "orangeJuice": 200,
+  "hotCoffee": 200,
+  "icedCoffee": 200,
+  "icedTea": 200,
   "appleJuice": 200,
+  "grapeJuice": 200,
   "calpis": 200,
-  "greenTea": 200,
-  "chocolateCroffle": 400,
-  "mapleCroffle": 400,
-  "greenTeaCroffle": 400,
-  "strawberryCroffle": 400,
-  "plainCroffle": 400
+  "gingerAle": 300
 }

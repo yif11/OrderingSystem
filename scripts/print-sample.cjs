@@ -6,11 +6,11 @@ const { buildDocuments, buildPrintData, renderPreview, createOrderPrinter } = re
 const sample = {
     id: 0, isTakeout: true, createdAt: new Date().toISOString(),
     items: [
-        { item: 'hotCoffee', price: 300, quantity: 2 },
-        { item: 'plainCroffle', price: 400, quantity: 1 },
+        { item: 'hotCoffee', price: 200, quantity: 2 },
+        { item: 'gingerAle', price: 300, quantity: 1 },
         { item: '印刷テスト（注文登録なし）', price: 0, quantity: 1 }
     ],
-    totalPrice: 700, receivedAmount: 1000, change: 300
+    totalPrice: 700, vouchers: { 50: 1, 100: 1, 200: 1 }, receivedAmount: 500, change: 150
 };
 
 async function main() {

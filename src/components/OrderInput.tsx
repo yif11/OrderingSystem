@@ -1,15 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { addOrder, reprintOrder } from '../api/orders';
 import { itemMapJa } from '../api/itemMap';
-import { buildOrderItems, calculateTotal, DISCOUNT_PER_COUPON, emptyQuantities, menuGroups, orderNumber, productPrices, type ProductId } from '../domain/orders';
+import { buildOrderItems, calculateCashDue, calculateTotal, calculateVoucherAmount, emptyQuantities, emptyVouchers, menuItems, orderNumber, productPrices, voucherDenominations, type ProductId } from '../domain/orders';
 import QuantityControl from './QuantityControl';
 import Icon from './Icon';
-
-const categoryLabels: Record<string, { title: string; icon: 'coffee' | 'leaf' | 'croffle'; tone: string }> = {
-    Coffee: { title: 'コーヒー', icon: 'coffee', tone: 'coffee' },
-    Tea: { title: 'お茶・ソフトドリンク', icon: 'leaf', tone: 'tea' },
-    Food: { title: 'クロッフル', icon: 'croffle', tone: 'food' },
-};
 
 const yen = (amount: number) => `¥${amount.toLocaleString('ja-JP')}`;
 
@@ -18,17 +12,19 @@ export default function OrderInput() {
     const [receivedAmount, setReceivedAmount] = useState('');
     const [loading, setLoading] = useState(false);
     const [isTakeout, setIsTakeout] = useState(false);
-    const [couponCount, setCouponCount] = useState(0);
+    const [vouchers, setVouchers] = useState(emptyVouchers);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [failedPrintOrder, setFailedPrintOrder] = useState<number | null>(null);
     const [checkoutVisible, setCheckoutVisible] = useState(false);
     const checkoutRef = useRef<HTMLElement>(null);
-    const totalPrice = calculateTotal(orders, couponCount);
-    const subtotal = calculateTotal(orders, 0);
-    const selectedItems = (Object.keys(productPrices) as ProductId[]).filter(item => orders[item] > 0);
+    const totalPrice = calculateTotal(orders);
+    const voucherAmount = calculateVoucherAmount(vouchers);
+    const voucherCount = voucherDenominations.reduce((count, amount) => count + vouchers[amount], 0);
+    const cashDue = calculateCashDue(totalPrice, vouchers);
+    const selectedItems = menuItems.filter(item => orders[item] > 0);
     const itemCount = selectedItems.reduce((count, item) => count + orders[item], 0);
-    const change = (Number(receivedAmount) || 0) - totalPrice;
+    const change = (Number(receivedAmount) || 0) - cashDue;
 
     useEffect(() => {
         const observer = new IntersectionObserver(([entry]) => setCheckoutVisible(entry.isIntersecting), { rootMargin: '-128px 0px -64px 0px' });
@@ -46,14 +42,14 @@ export default function OrderInput() {
         }
         const items = buildOrderItems(orders);
         if (items.length === 0) { setError('商品を選択してください。'); return; }
-        if (!Number.isSafeInteger(Number(receivedAmount)) || change < 0) {
+        if (!Number.isSafeInteger(Number(receivedAmount)) || Number(receivedAmount) < 0 || change < 0) {
             setError('お預かり金額を確認してください。'); return;
         }
         setLoading(true);
         setError('');
         setMessage('');
         try {
-            const result = await addOrder({ items, totalPrice, receivedAmount: Number(receivedAmount), change, isTakeout });
+            const result = await addOrder({ items, totalPrice, vouchers, receivedAmount: Number(receivedAmount), change, isTakeout });
             const number = orderNumber(result.order);
             if (result.printing.status === 'failed') {
                 setFailedPrintOrder(result.order.id);
@@ -65,7 +61,7 @@ export default function OrderInput() {
             setOrders(emptyQuantities());
             setReceivedAmount('');
             setIsTakeout(false);
-            setCouponCount(0);
+            setVouchers(emptyVouchers());
         } catch (error) {
             setError(error instanceof Error ? error.message : '注文を登録できませんでした。');
         } finally {
@@ -103,35 +99,28 @@ export default function OrderInput() {
             )}
             <form onSubmit={event => { event.preventDefault(); void handleSubmit(); }}>
                 <fieldset disabled={loading} className="order-layout">
-                    <legend className="sr-only">注文商品とお会計</legend>
-                    <div className="menu-area">
-                        <div className="section-heading"><h2>メニュー</h2></div>
-                        <div className="menu-sections">
-                            {menuGroups.map(group => {
-                                const category = categoryLabels[group.title];
-                                return (
-                                    <section key={group.title} className={`menu-section category-${category.tone}`} aria-label={category.title}>
-                                        <div className="category-heading">
-                                            <span className="category-icon"><Icon name={category.icon} /></span>
-                                            <h3>{category.title}</h3>
-                                        </div>
-                                        <div className="product-list">
-                                            {group.items.map(item => (
-                                                <div key={item} className={`product-row${orders[item] > 0 ? ' is-selected' : ''}`}>
-                                                    <div className="product-info"><span className="product-name">{itemMapJa[item]}</span><span className="product-price">{yen(productPrices[item])}</span></div>
-                                                    <QuantityControl label={itemMapJa[item]} value={orders[item]} onChange={quantity => updateOrder(item, quantity)} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </section>
-                                );
-                            })}
+                    <legend className="sr-only">注文商品・商品券・お会計</legend>
+                    <section className="menu-panel" aria-labelledby="menu-heading">
+                        <div className="panel-heading"><h2 id="menu-heading">メニュー</h2></div>
+                        <div className="product-list">
+                            {menuItems.map(item => (
+                                <div key={item} className={`product-row${orders[item] > 0 ? ' is-selected' : ''}`}>
+                                    <div className="product-info"><span className="product-name">{itemMapJa[item]}</span><span className="product-price">{yen(productPrices[item])}</span></div>
+                                    <QuantityControl label={itemMapJa[item]} value={orders[item]} onChange={quantity => updateOrder(item, quantity)} />
+                                </div>
+                            ))}
                         </div>
-                    </div>
+                    </section>
+                    <section className="voucher-panel" aria-labelledby="voucher-heading">
+                        <div className="panel-heading"><div><Icon name="ticket" /><h2 id="voucher-heading">商品券</h2></div><span className="count-pill">{voucherCount} 枚</span></div>
+                        <p className="voucher-note">商品券分のお釣りは出ません。</p>
+                        <div className="voucher-list">{voucherDenominations.map(amount => (
+                            <div key={amount} className="voucher-row"><span>{yen(amount)}</span><QuantityControl label={`${amount}円商品券`} value={vouchers[amount]} onChange={quantity => setVouchers(previous => ({ ...previous, [amount]: quantity }))} /></div>
+                        ))}</div>
+                    </section>
                     <section ref={checkoutRef} id="checkout" className="checkout-panel" aria-labelledby="checkout-heading">
                         <div className="checkout-heading"><div><Icon name="receipt" /><h2 id="checkout-heading">お会計</h2></div><span className="count-pill">{itemCount} 点</span></div>
                         <fieldset className="fulfillment-fieldset">
-                            <legend className="field-label">お渡し方法</legend>
                             <div className="fulfillment-control">
                                 <label><input type="radio" name="fulfillment" checked={!isTakeout} onChange={() => setIsTakeout(false)} /><span><Icon name="coffee" />店内</span></label>
                                 <label><input id="takeout" type="radio" name="fulfillment" checked={isTakeout} onChange={() => setIsTakeout(true)} /><span><Icon name="bag" />テイクアウト</span></label>
@@ -142,21 +131,20 @@ export default function OrderInput() {
                                 <ul className="cart-items">{selectedItems.map(item => <li key={item}><span>{itemMapJa[item]}<small>× {orders[item]}</small></span><strong>{yen(productPrices[item] * orders[item])}</strong></li>)}</ul>
                             )}
                         </div>
-                        <div className="coupon-row"><div><h3>どりーむきっず用割引券</h3><p>1枚につき {yen(DISCOUNT_PER_COUPON)} 引き</p></div><QuantityControl label="割引券" value={couponCount} onChange={setCouponCount} /></div>
-                        <div className="price-breakdown"><div><span>小計</span><span>{yen(subtotal)}</span></div>{couponCount > 0 && <div className="discount-line"><span>割引（{couponCount}枚）</span><span>−{yen(subtotal - totalPrice)}</span></div>}</div>
                         <div className="total-row"><span>合計金額</span><strong><small>¥</small>{totalPrice.toLocaleString('ja-JP')}</strong></div>
+                        <div className="price-breakdown">
+                            {voucherCount > 0 && <div className="voucher-line"><span>商品券（{voucherCount}枚）</span><span>{yen(voucherAmount)}</span></div>}
+                            {voucherAmount > totalPrice && <p className="voucher-note">商品券の超過分 {yen(voucherAmount - totalPrice)} はお釣りの対象外です。</p>}
+                            <div><span>現金でのお支払い</span><strong>{yen(cashDue)}</strong></div>
+                        </div>
                         <div className="payment-area">
-                            <label className="field-label" htmlFor="receivedAmount">お預かり金額</label>
+                            <label className="field-label" htmlFor="receivedAmount">お預かり金額（現金）</label>
                             <div className="currency-input"><span>¥</span><input id="receivedAmount" type="number" min="0" step="1" inputMode="numeric" value={receivedAmount} onChange={event => setReceivedAmount(event.target.value)} placeholder="0" aria-describedby={receivedAmount !== '' && change < 0 ? 'payment-hint' : undefined} /></div>
-                            <div className="cash-shortcuts">
-                                <button type="button" onClick={() => setReceivedAmount(String(totalPrice))}>ちょうど</button>
-                                {[1000, 5000].map(amount => <button key={amount} type="button" disabled={totalPrice > amount} onClick={() => setReceivedAmount(String(amount))}>{yen(amount)}</button>)}
-                            </div>
                             {receivedAmount !== '' && change < 0 && <p id="payment-hint" className="payment-hint is-insufficient">あと {yen(-change)} 不足しています</p>}
                             <div className="change-row"><span>お釣り</span><strong>{yen(Math.max(0, change))}</strong></div>
                         </div>
                         <button type="submit" className="button button-primary submit-order">{loading ? '注文を処理しています…' : '注文を送信'}<Icon name="arrow" /></button>
-                        <p className="checkout-footnote">レシート・番号票を印刷します</p>
+                        {/* <p className="checkout-footnote">レシート・番号票を印刷します</p> */}
                     </section>
                 </fieldset>
             </form>

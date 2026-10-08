@@ -27,7 +27,7 @@ test('Vite alone serves same-origin order APIs, frontend routes and the favicon 
     assert.deepEqual(await (await fetch(base + '/api/orders')).json(), []);
     const response = await fetch(base + '/api/add-order', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: [{ item: 'hotCoffee', price: 300 }], totalPrice: 300, receivedAmount: 500, change: 200, isTakeout: false })
+        body: JSON.stringify({ items: [{ item: 'hotCoffee', price: 200 }], totalPrice: 200, vouchers: { 50: 1 }, receivedAmount: 500, change: 350, isTakeout: false })
     });
     assert.equal(response.status, 201);
     assert.equal((await response.json()).printing.status, 'queued');

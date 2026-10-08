@@ -8,10 +8,10 @@ const { createOrderStore } = require('../backend/order-store.cjs');
 const { createOrderMaintenance, readBackup } = require('../backend/order-maintenance.cjs');
 const { createOrderService } = require('../backend/order-service.cjs');
 
-const request = { items: [{ item: 'hotCoffee', price: 300 }], totalPrice: 300, receivedAmount: 500, change: 200, isTakeout: true };
+const request = { items: [{ item: 'hotCoffee', price: 200 }], totalPrice: 200, receivedAmount: 500, change: 300, isTakeout: true };
 const fixture = () => ({
-    orders: [{ id: 3, ...request, items: [{ item: 'hotCoffee', price: 300, quantity: 2, served: false }], note: '旧データの追加属性' }],
-    servedOrders: [{ id: 5, ...request, items: [{ item: 'plainCroffle', price: 400, served: true }], isTakeout: false }],
+    orders: [{ id: 3, ...request, totalPrice: 300, change: 200, items: [{ item: 'hotCoffee', price: 300, quantity: 2, served: false }], note: '旧データの追加属性' }],
+    servedOrders: [{ id: 5, ...request, totalPrice: 300, change: 200, items: [{ item: 'plainCroffle', price: 400, served: true }], isTakeout: false }],
     maxOrderId: 9
 });
 
@@ -123,6 +123,24 @@ test('CSV exports both order lists with Japanese names, quantities, quoting and 
     assert.match(csv, /"2","300","600"/);
     assert.ok(csv.includes('"\'=SUM(1,2)""\ncustom"'));
     assert.equal(result.rows, 3);
+});
+
+test('voucher payments survive backup and restoration and appear in CSV without reducing the sale', async t => {
+    const { store, maintenance } = await setup(t);
+    const service = createOrderService({ store, printOrder: async () => ({}) });
+    const { order } = await service.addOrder({ ...request, vouchers: { 500: 1 }, receivedAmount: 0, change: 0 });
+    const before = await store.read();
+    assert.equal((await maintenance.status()).totalSales, 800);
+    const backup = await maintenance.backup();
+    assert.deepEqual(readBackup(backup.file).data.orders.find(saved => saved.id === order.id).vouchers, order.vouchers);
+    await maintenance.reset();
+    await maintenance.restore(backup.file);
+    assert.deepEqual(await store.read(), before);
+    const csv = fs.readFileSync((await maintenance.exportCsv()).file, 'utf8');
+    assert.ok(csv.includes('"商品券額面合計","商品券充当額","現金支払額"'));
+    assert.ok(csv.includes('"50円商品券枚数","100円商品券枚数","200円商品券枚数","300円商品券枚数","500円商品券枚数","1000円商品券枚数"'));
+    const row = csv.split('\r\n').find(line => line.startsWith(`"T${order.id}",`));
+    assert.ok(row.endsWith('"200","0","0","500","200","0","0","0","0","0","1","0"'));
 });
 
 test('interrupted multi-file writes are recovered from the journal before any operation', async t => {

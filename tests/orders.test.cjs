@@ -6,8 +6,8 @@ const path = require('node:path');
 const { createApp } = require('../server.cjs');
 
 const orderData = {
-    items: [{ item: 'hotCoffee', price: 300 }],
-    totalPrice: 300, receivedAmount: 500, change: 200, isTakeout: true
+    items: [{ item: 'hotCoffee', price: 200 }],
+    totalPrice: 200, receivedAmount: 500, change: 300, isTakeout: true
 };
 
 async function setup(t, printOrder) {
@@ -88,15 +88,59 @@ test('invalid requests are rejected before saving or printing', async t => {
     for (const invalid of [
         {}, { ...orderData, items: [] }, { ...orderData, change: 0 },
         { ...orderData, items: [{ item: 'hotCoffee', price: -1 }] },
-        { ...orderData, items: [{ item: 'hotCoffee', price: 300, quantity: 0 }] },
-        { ...orderData, receivedAmount: 100, change: -200 },
-        { ...orderData, totalPrice: 600, receivedAmount: 700, change: 100 }
+        { ...orderData, items: [{ item: 'hotCoffee', price: 200, quantity: 0 }] },
+        { ...orderData, receivedAmount: 100, change: -100 },
+        { ...orderData, totalPrice: 600, receivedAmount: 700, change: 100 },
+        { ...orderData, totalPrice: 100, receivedAmount: 500, change: 400 },
+        { ...orderData, items: [{ item: 'plainCroffle', price: 400 }], totalPrice: 400, change: 100 },
+        { ...orderData, items: [{ item: 'hotCoffee', price: 300 }], totalPrice: 300, change: 200 },
+        ...[null, [], 1, { 75: 1 }, { '050': 1 }, { 100: -1 }, { 200: 0.5 }, { 300: '1' }, { 1000: Number.MAX_SAFE_INTEGER }]
+            .map(vouchers => ({ ...orderData, vouchers })),
+        { ...orderData, vouchers: { 100: 1 }, change: 300 },
+        { ...orderData, vouchers: { 500: 1 }, receivedAmount: 0, change: 300 }
     ]) {
         assert.equal((await client.post('/add-order', invalid)).status, 400);
     }
     assert.equal(prints, 0);
     assert.deepEqual(await (await client.get('/orders')).json(), []);
     assert.equal(fs.readFileSync(path.join(client.dataDir, 'max-order-id.txt'), 'utf8'), '0');
+});
+
+test('mixed vouchers preserve the sale value, cash change and denomination counts through serving and reprinting', async t => {
+    const printed = [];
+    const client = await setup(t, async order => { printed.push(order); return { jobId: 1 }; });
+    const vouchers = { 50: 1, 100: 1, 200: 1, 300: 1, 500: 1, 1000: 1 };
+    const response = await client.post('/add-order', {
+        items: [{ item: 'gingerAle', price: 300, quantity: 8 }], totalPrice: 2400,
+        vouchers, receivedAmount: 500, change: 250, isTakeout: false
+    });
+    assert.equal(response.status, 201);
+    const { order } = await response.json();
+    assert.equal(order.totalPrice, 2400);
+    assert.equal(order.receivedAmount, 500);
+    assert.equal(order.change, 250);
+    assert.deepEqual(order.vouchers, vouchers);
+    assert.deepEqual((await (await client.get('/orders')).json())[0].vouchers, vouchers);
+    assert.equal((await client.post('/mark-served', { orderId: order.id, itemIndex: 0 })).status, 200);
+    const served = (await (await client.get('/served-orders')).json())[0];
+    assert.deepEqual(served.vouchers, vouchers);
+    assert.equal((await client.post(`/orders/${order.id}/print`)).status, 200);
+    assert.deepEqual(printed[1].vouchers, vouchers);
+    assert.equal(printed[1].change, 250);
+});
+
+test('vouchers cover an order exactly or exceed it without returning voucher change', async t => {
+    const client = await setup(t, async () => ({}));
+    for (const vouchers of [{ 50: 2, 100: 1 }, { 1000: 1 }]) {
+        const response = await client.post('/add-order', { ...orderData, vouchers, receivedAmount: 0, change: 0 });
+        assert.equal(response.status, 201);
+        const { order } = await response.json();
+        assert.equal(order.totalPrice, 200);
+        assert.equal(order.change, 0);
+    }
+    const response = await client.post('/add-order', { ...orderData, vouchers: { 500: 1 }, receivedAmount: 100, change: 100 });
+    assert.equal(response.status, 201);
+    assert.equal((await response.json()).order.change, 100, 'only the cash tender is returned');
 });
 
 test('concurrent orders get unique IDs while a slow printer does not block reads', async t => {

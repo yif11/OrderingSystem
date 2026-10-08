@@ -3,6 +3,7 @@ const { submitRaw } = require('./windows-printer.cjs');
 const { loadReceiptImages } = require('./receipt-images.cjs');
 
 const itemNames = require('../shared/item-names.json');
+const { voucherDenominations, voucherAmount, cashDue } = require('../backend/vouchers.cjs');
 
 // Center the 384-dot layout on this NEC's 420-dot (58 mm / 35-column) area.
 // ReceiptLine margins use 12-dot character units: 1.5 characters = 18 dots.
@@ -25,6 +26,7 @@ function buildDocuments(order) {
         groups.set(key, group);
     }
     const subtotal = [...groups.values()].reduce((total, item) => total + item.price * item.quantity, 0);
+    const vouchers = voucherAmount(order.vouchers);
     const yen = (amount) => `￥${amount.toLocaleString('ja-JP')}`;
     const receipt = [
         '{border:none}', `{image:${images.logo}}`, ` 注文番号 ${orderNumber} `,
@@ -37,7 +39,15 @@ function buildDocuments(order) {
         ]),
         '--------------------------------',
         ...(subtotal > order.totalPrice ? [`小計 | ${yen(subtotal)}`, `割引 | -${yen(subtotal - order.totalPrice)}`] : []),
-        `合計 | ${yen(order.totalPrice)}`, `お預かり | ${yen(order.receivedAmount)}`,
+        `合計 | ${yen(order.totalPrice)}`,
+        ...(vouchers > 0 ? [
+            ...voucherDenominations.filter(amount => order.vouchers[amount] > 0).map(amount =>
+                `商品券 ${yen(amount)} × ${order.vouchers[amount]}枚 | ${yen(amount * order.vouchers[amount])}`),
+            `商品券合計 | ${yen(vouchers)}`,
+            ...(vouchers > order.totalPrice ? [`商品券超過分 | ${yen(vouchers - order.totalPrice)}`, ' 商品券分の釣銭なし '] : []),
+            `現金でのお支払い | ${yen(cashDue(order.totalPrice, order.vouchers))}`
+        ] : []),
+        `${order.vouchers !== undefined ? 'お預かり（現金）' : 'お預かり'} | ${yen(order.receivedAmount)}`,
         `お釣り | ${yen(order.change)}`, '{width:*}',
         ' ありがとうございました ', '', `{image:${images.qr}}`
     ].join('\n');
